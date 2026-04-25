@@ -12,7 +12,12 @@ import SwiftData
 struct StudyShiftApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
+            StudentProfile.self,
+            Subject.self,
+            ClassSession.self,
+            Assessment.self,
+            TodoTask.self,
+            WorkShift.self
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
@@ -25,7 +30,7 @@ struct StudyShiftApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            SubjectListView()
         }
         .modelContainer(sharedModelContainer)
     }

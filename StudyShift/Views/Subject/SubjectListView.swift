@@ -1,0 +1,74 @@
+//
+//  SubjectListView.swift
+//  StudyShift
+//
+//  Created by Đức Anh on 26/4/26.
+//
+
+import SwiftUI
+import SwiftData
+
+struct SubjectListView: View {
+    @Environment(\.modelContext) private var context
+
+    @Query(sort: \Subject.name) private var subjects: [Subject]
+
+    @State private var viewModel = SubjectListViewModel()
+
+    var body: some View {
+        NavigationStack {
+            List {
+                ForEach(subjects) { subject in
+                    Button {
+                        viewModel.printSubject(subject)
+                    } label: {
+                        HStack {
+                            Circle()
+                                .fill(Color(hex: subject.colorHex))
+                                .frame(width: 14, height: 14)
+
+                            VStack(alignment: .leading) {
+                                Text(subject.name)
+                                    .font(.headline)
+
+                                Text(subject.code)
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                            }
+
+                            Spacer()
+
+                            Text(subject.targetGrade.rawValue)
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                    .swipeActions {
+                        Button(role: .destructive) {
+                            viewModel.deleteSubject(subject, context: context)
+                        } label: {
+                            Label("Delete", systemImage: "trash")
+                        }
+                    }
+                }
+            }
+            .navigationTitle("Subjects")
+            .toolbar {
+                Button {
+                    viewModel.showAddSubjectForm = true
+                } label: {
+                    Image(systemName: "plus")
+                }
+            }
+            .sheet(isPresented: $viewModel.showAddSubjectForm) {
+                SubjectFormView()
+            }
+        }
+    }
+}
+
+#Preview {
+    SubjectListView()
+        .modelContainer(for: Subject.self, inMemory: true)
+}
