@@ -18,7 +18,10 @@ final class ClassSession {
     var startTime: Date
     var endTime: Date
     var isRepeatingWeekly: Bool
-
+    
+    var externalEventId: String?
+    var sourceURL: String?
+    
     var subject: Subject?
 
     init(
@@ -30,6 +33,8 @@ final class ClassSession {
         startTime: Date,
         endTime: Date,
         isRepeatingWeekly: Bool = true,
+        externalEventId: String? = nil,
+        sourceURL: String? = nil,
         subject: Subject? = nil
     ) {
         self.id = id
@@ -40,6 +45,8 @@ final class ClassSession {
         self.startTime = startTime
         self.endTime = endTime
         self.isRepeatingWeekly = isRepeatingWeekly
+        self.externalEventId = externalEventId
+        self.sourceURL = sourceURL
         self.subject = subject
     }
 }
