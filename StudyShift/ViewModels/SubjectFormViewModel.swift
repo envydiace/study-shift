@@ -7,16 +7,16 @@
 
 import Foundation
 import SwiftData
+import Combine
 
-@Observable
-final class SubjectFormViewModel {
-    var name: String = ""
-    var code: String = ""
-    var colorHex: String = "#4F46E5"
-    var targetGrade: GradeTarget = .distinction
+final class SubjectFormViewModel: ObservableObject {
+    @Published var name: String = ""
+    @Published var code: String = ""
+    @Published var colorHex: String = "#4F46E5"
+    @Published var targetGrade: GradeTarget = .distinction
 
-    var showValidationError: Bool = false
-    var validationMessage: String = ""
+    @Published var showValidationError: Bool = false
+    @Published var validationMessage: String = ""
 
     let colorOptions: [String] = [
         "#4F46E5",

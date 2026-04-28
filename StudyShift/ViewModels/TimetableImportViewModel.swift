@@ -7,13 +7,13 @@
 
 import Foundation
 import SwiftData
+import Combine
 
-@Observable
-final class TimetableImportViewModel {
-    var urlText: String = ""
-    var errorMessage: String = ""
-    var successMessage: String = ""
-    var isImporting: Bool = false
+final class TimetableImportViewModel: ObservableObject {
+    @Published var urlText: String = ""
+    @Published var errorMessage: String = ""
+    @Published var successMessage: String = ""
+    @Published var isImporting: Bool = false
 
     private let service = TimetableImportService()
 

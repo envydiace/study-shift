@@ -7,10 +7,12 @@
 
 import Foundation
 import SwiftData
+import Combine
 
-@Observable
-final class SubjectListViewModel {
-    var showAddSubjectForm: Bool = false
+final class SubjectListViewModel: ObservableObject {
+    @Published var showAddSubjectForm: Bool = false
+    
+    @Published var showImportTimetableView = false
 
     func deleteSubject(
         _ subject: Subject,

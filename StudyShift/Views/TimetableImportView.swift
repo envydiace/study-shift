@@ -12,8 +12,12 @@ struct TimetableImportView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
 
-    @State private var viewModel = TimetableImportViewModel()
+    @StateObject private var viewModel: TimetableImportViewModel
 
+    init() {
+        _viewModel = StateObject(wrappedValue: TimetableImportViewModel())
+    }
+    
     var body: some View {
         NavigationStack {
             Form {

@@ -11,8 +11,12 @@ struct SubjectFormView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
 
-    @State private var viewModel = SubjectFormViewModel()
+    @StateObject private var viewModel: SubjectFormViewModel
 
+    init() {
+        _viewModel = StateObject(wrappedValue: SubjectFormViewModel())
+    }
+    
     var body: some View {
         NavigationStack {
             Form {

@@ -13,9 +13,11 @@ struct SubjectListView: View {
 
     @Query(sort: \Subject.name) private var subjects: [Subject]
 
-    @State private var viewModel = SubjectListViewModel()
+    @StateObject private var viewModel: SubjectListViewModel
     
-    @State private var showImportTimetableView = false
+    init() {
+        _viewModel = StateObject(wrappedValue: SubjectListViewModel())
+    }
     
     var body: some View {
         NavigationStack {
@@ -59,7 +61,7 @@ struct SubjectListView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
-                        showImportTimetableView = true
+                        viewModel.showImportTimetableView = true
                     } label: {
                         Image(systemName: "calendar.badge.plus")
                     }
@@ -76,7 +78,7 @@ struct SubjectListView: View {
             .sheet(isPresented: $viewModel.showAddSubjectForm) {
                 SubjectFormView()
             }
-            .sheet(isPresented: $showImportTimetableView) {
+            .sheet(isPresented: $viewModel.showImportTimetableView) {
                 TimetableImportView()
             }
         }
