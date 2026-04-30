@@ -30,7 +30,7 @@ struct StudyShiftApp: App {
 
     var body: some Scene {
         WindowGroup {
-            SubjectListView()
+            MainTabView()
         }
         .modelContainer(sharedModelContainer)
     }

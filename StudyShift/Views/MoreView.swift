@@ -1,0 +1,37 @@
+//
+//  MoreView.swift
+//  StudyShift
+//
+//  Created by Đức Anh on 30/4/26.
+//
+
+import SwiftUI
+
+struct MoreView: View {
+    var body: some View {
+        NavigationStack {
+            List {
+                NavigationLink("Assessments") {
+                    AssessmentsView()
+                }
+
+                NavigationLink("Grade Tracker") {
+                    GradeTrackerView()
+                }
+
+                NavigationLink("Import Timetable") {
+                    TimetableImportView()
+                }
+
+                NavigationLink("Profile / Settings") {
+                    ProfileSettingsView()
+                }
+            }
+            .navigationTitle("More")
+        }
+    }
+}
+
+#Preview {
+    MoreView()
+}
