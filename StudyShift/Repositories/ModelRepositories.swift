@@ -70,6 +70,19 @@ struct ClassSessionRepository: RepositoryProtocol {
         )
         return try fetch(with: descriptor)
     }
+
+    func fetchByImportIdentity(
+        externalEventId: String,
+        sourceURL: String
+    ) throws -> ClassSession? {
+        let descriptor = FetchDescriptor<ClassSession>(
+            predicate: #Predicate { session in
+                session.externalEventId == externalEventId &&
+                session.sourceURL == sourceURL
+            }
+        )
+        return try fetch(with: descriptor).first
+    }
 }
 
 struct WorkShiftRepository: RepositoryProtocol {
