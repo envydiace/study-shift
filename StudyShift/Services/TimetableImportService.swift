@@ -10,6 +10,7 @@ import Foundation
 struct ImportedCalendarEvent {
     let uid: String
     let title: String
+    let description: String
     let location: String
     let startDate: Date
     let endDate: Date
@@ -54,12 +55,22 @@ final class TimetableImportService {
 
             return ImportedCalendarEvent(
                 uid: uid,
-                title: title,
-                location: value(for: "LOCATION", in: block) ?? "",
+                title: unescapedICSValue(title),
+                description: unescapedICSValue(value(for: "DESCRIPTION", in: block) ?? ""),
+                location: unescapedICSValue(value(for: "LOCATION", in: block) ?? ""),
                 startDate: startDate,
                 endDate: endDate
             )
         }
+    }
+
+    private func unescapedICSValue(_ value: String) -> String {
+        value
+            .replacingOccurrences(of: "\\n", with: "\n")
+            .replacingOccurrences(of: "\\N", with: "\n")
+            .replacingOccurrences(of: "\\,", with: ",")
+            .replacingOccurrences(of: "\\;", with: ";")
+            .replacingOccurrences(of: "\\\\", with: "\\")
     }
 
     private func value(for key: String, in block: String) -> String? {

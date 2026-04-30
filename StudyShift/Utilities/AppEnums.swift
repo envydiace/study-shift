@@ -14,15 +14,6 @@ enum GradeTarget: String, Codable, CaseIterable {
     case highDistinction = "HD"
 }
 
-enum ClassSessionType: String, Codable, CaseIterable {
-    case lecture = "Lecture"
-    case tutorial = "Tutorial"
-    case lab = "Lab"
-    case workshop = "Workshop"
-    case online = "Online"
-    case other = "Other"
-}
-
 enum Weekday: String, Codable, CaseIterable {
     case monday = "Monday"
     case tuesday = "Tuesday"

@@ -19,6 +19,15 @@ struct SubjectRepository: RepositoryProtocol {
         )
         return try fetch(with: descriptor)
     }
+
+    func fetchByCode(_ code: String) throws -> Subject? {
+        let descriptor = FetchDescriptor<Subject>(
+            predicate: #Predicate { subject in
+                subject.code == code
+            }
+        )
+        return try fetch(with: descriptor).first
+    }
 }
 
 struct AssessmentRepository: RepositoryProtocol {

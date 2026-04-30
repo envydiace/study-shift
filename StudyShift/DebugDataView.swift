@@ -320,7 +320,6 @@ struct DebugDataView: View {
             headers: [
                 "id",
                 "title",
-                "sessionType",
                 "location",
                 "startTime",
                 "endTime",
@@ -331,7 +330,6 @@ struct DebugDataView: View {
                 [
                     session.id.uuidString,
                     session.title,
-                    session.sessionType.rawValue,
                     session.location,
                     formatDate(session.startTime),
                     formatDate(session.endTime),

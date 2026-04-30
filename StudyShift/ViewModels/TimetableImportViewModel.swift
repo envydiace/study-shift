@@ -17,10 +17,15 @@ final class TimetableImportViewModel: ObservableObject {
 
     private let service = TimetableImportService()
     private var repository: ClassSessionRepository?
+    private var subjectRepository: SubjectRepository?
 
     func configure(context: ModelContext) {
         if repository == nil {
             repository = ClassSessionRepository(context: context)
+        }
+
+        if subjectRepository == nil {
+            subjectRepository = SubjectRepository(context: context)
         }
     }
 
@@ -29,7 +34,7 @@ final class TimetableImportViewModel: ObservableObject {
         errorMessage = ""
         successMessage = ""
 
-        guard let repository else {
+        guard let repository, let subjectRepository else {
             errorMessage = "Repository is not ready."
             isImporting = false
             return
@@ -38,22 +43,49 @@ final class TimetableImportViewModel: ObservableObject {
         do {
             let trimmedURL = urlText.trimmingCharacters(in: .whitespacesAndNewlines)
             let events = try await service.importEvents(from: trimmedURL)
+            var subjectsByCode: [String: Subject] = [:]
+            var createdSubjectCount = 0
+
+            for event in events {
+                guard let code = subjectCode(from: event.description) else {
+                    continue
+                }
+
+                if subjectsByCode[code] != nil {
+                    continue
+                }
+
+                if let existingSubject = try subjectRepository.fetchByCode(code) {
+                    subjectsByCode[code] = existingSubject
+                    continue
+                }
+
+                let subject = Subject(
+                    name: subjectName(from: event.title),
+                    code: code
+                )
+                try subjectRepository.insert(subject)
+                subjectsByCode[code] = subject
+                createdSubjectCount += 1
+            }
 
             let sessions = events.map { event in
                 ClassSession(
                     title: event.title,
-                    sessionType: detectSessionType(from: event.title),
                     location: event.location,
                     startTime: event.startDate,
                     endTime: event.endDate,
                     externalEventId: event.uid,
-                    sourceURL: trimmedURL
+                    sourceURL: trimmedURL,
+                    subject: subjectCode(from: event.description).flatMap {
+                        subjectsByCode[$0]
+                    }
                 )
             }
 
             try repository.insert(sessions)
 
-            successMessage = "Imported \(events.count) class sessions successfully."
+            successMessage = "Imported \(events.count) class sessions and created \(createdSubjectCount) subjects successfully."
             print("Imported \(events.count) class sessions.")
         } catch {
             errorMessage = "Failed to import timetable. Please check the URL and try again."
@@ -63,21 +95,31 @@ final class TimetableImportViewModel: ObservableObject {
         isImporting = false
     }
 
-    private func detectSessionType(from title: String) -> ClassSessionType {
-        let lowercased = title.lowercased()
-
-        if lowercased.contains("lec") {
-            return .lecture
-        } else if lowercased.contains("lab") {
-            return .lab
-        } else if lowercased.contains("cmp") {
-            return .tutorial
-        } else if lowercased.contains("workshop") {
-            return .workshop
-        } else if lowercased.contains("online") {
-            return .online
-        } else {
-            return .other
+    private func subjectCode(from description: String) -> String? {
+        guard let firstLine = description
+            .components(separatedBy: .newlines)
+            .first?
+            .trimmingCharacters(in: .whitespacesAndNewlines),
+              let rawCode = firstLine.components(separatedBy: "_").first?
+            .trimmingCharacters(in: .whitespacesAndNewlines),
+              !rawCode.isEmpty
+        else {
+            return nil
         }
+
+        return rawCode
+    }
+
+    private func subjectName(from summary: String) -> String {
+        let name = summary
+            .components(separatedBy: ",")
+            .first?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        if let name, !name.isEmpty {
+            return name
+        }
+
+        return summary
     }
 }
