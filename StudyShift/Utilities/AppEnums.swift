@@ -54,3 +54,8 @@ enum TaskPriority: String, Codable, CaseIterable {
     case medium = "Medium"
     case high = "High"
 }
+
+enum Constants {
+    static let hourHeight: CGFloat = 60   // 1 hour = 60px
+    static let dayWidth: CGFloat = 80     // each day column
+}
