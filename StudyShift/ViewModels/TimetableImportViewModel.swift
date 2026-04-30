@@ -44,10 +44,8 @@ final class TimetableImportViewModel: ObservableObject {
                     title: event.title,
                     sessionType: detectSessionType(from: event.title),
                     location: event.location,
-                    dayOfWeek: getWeekday(from: event.startDate),
                     startTime: event.startDate,
                     endTime: event.endDate,
-                    isRepeatingWeekly: false,
                     externalEventId: event.uid,
                     sourceURL: trimmedURL
                 )
@@ -80,21 +78,6 @@ final class TimetableImportViewModel: ObservableObject {
             return .online
         } else {
             return .other
-        }
-    }
-
-    private func getWeekday(from date: Date) -> Weekday {
-        let weekdayNumber = Calendar.current.component(.weekday, from: date)
-
-        switch weekdayNumber {
-        case 1: return .sunday
-        case 2: return .monday
-        case 3: return .tuesday
-        case 4: return .wednesday
-        case 5: return .thursday
-        case 6: return .friday
-        case 7: return .saturday
-        default: return .monday
         }
     }
 }

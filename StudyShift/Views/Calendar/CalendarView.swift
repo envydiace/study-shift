@@ -6,8 +6,10 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct CalendarView: View {
+    @Environment(\.modelContext) private var context
     @StateObject private var viewModel: CalendarViewModel
 
     init(
@@ -88,6 +90,28 @@ struct CalendarView: View {
             }
             .presentationDetents([.medium])
         }
+        .task {
+            viewModel.configure(context: context)
+            viewModel.loadEvents()
+        }
+        .alert("Error", isPresented: errorBinding) {
+            Button("OK", role: .cancel) {
+                viewModel.errorMessage = ""
+            }
+        } message: {
+            Text(viewModel.errorMessage)
+        }
+    }
+
+    private var errorBinding: Binding<Bool> {
+        Binding(
+            get: { !viewModel.errorMessage.isEmpty },
+            set: { isPresented in
+                if !isPresented {
+                    viewModel.errorMessage = ""
+                }
+            }
+        )
     }
 }
 

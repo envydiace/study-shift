@@ -14,14 +14,12 @@ final class ClassSession {
     var title: String
     var sessionType: ClassSessionType
     var location: String
-    var dayOfWeek: Weekday
     var startTime: Date
     var endTime: Date
-    var isRepeatingWeekly: Bool
-    
+
     var externalEventId: String?
     var sourceURL: String?
-    
+
     var subject: Subject?
 
     init(
@@ -29,10 +27,8 @@ final class ClassSession {
         title: String,
         sessionType: ClassSessionType,
         location: String = "",
-        dayOfWeek: Weekday,
         startTime: Date,
         endTime: Date,
-        isRepeatingWeekly: Bool = true,
         externalEventId: String? = nil,
         sourceURL: String? = nil,
         subject: Subject? = nil
@@ -41,10 +37,8 @@ final class ClassSession {
         self.title = title
         self.sessionType = sessionType
         self.location = location
-        self.dayOfWeek = dayOfWeek
         self.startTime = startTime
         self.endTime = endTime
-        self.isRepeatingWeekly = isRepeatingWeekly
         self.externalEventId = externalEventId
         self.sourceURL = sourceURL
         self.subject = subject

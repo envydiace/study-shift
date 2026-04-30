@@ -104,7 +104,7 @@ struct DebugDataView: View {
                                 Text(session.title)
                                     .font(.headline)
 
-                                Text(session.dayOfWeek.rawValue)
+                                Text(formatDate(session.startTime))
                                     .font(.subheadline)
                                     .foregroundStyle(.secondary)
                             }
@@ -322,10 +322,8 @@ struct DebugDataView: View {
                 "title",
                 "sessionType",
                 "location",
-                "dayOfWeek",
                 "startTime",
                 "endTime",
-                "isRepeatingWeekly",
                 "subjectId",
                 "subjectName"
             ],
@@ -335,10 +333,8 @@ struct DebugDataView: View {
                     session.title,
                     session.sessionType.rawValue,
                     session.location,
-                    session.dayOfWeek.rawValue,
                     formatDate(session.startTime),
                     formatDate(session.endTime),
-                    formatBool(session.isRepeatingWeekly),
                     session.subject?.id.uuidString ?? "",
                     session.subject?.name ?? ""
                 ]

@@ -16,9 +16,12 @@ struct CalendarEventView: View {
 
     var body: some View {
         Text(event.title)
-            .font(.caption)
+            .font(.caption2)
             .foregroundColor(.white)
-            .padding(6)
+            .lineLimit(4)
+            .minimumScaleFactor(0.85)
+            .padding(.horizontal, 4)
+            .padding(.vertical, 3)
             .frame(
                 width: dayWidth - 8,
                 height: eventHeight,
