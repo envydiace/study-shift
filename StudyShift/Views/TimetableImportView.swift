@@ -12,9 +12,12 @@ struct TimetableImportView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
 
+    let onImported: (() -> Void)?
+
     @StateObject private var viewModel: TimetableImportViewModel
 
-    init() {
+    init(onImported: (() -> Void)? = nil) {
+        self.onImported = onImported
         _viewModel = StateObject(wrappedValue: TimetableImportViewModel())
     }
     
@@ -35,7 +38,10 @@ struct TimetableImportView: View {
                 Section {
                     Button {
                         Task {
-                            await viewModel.importTimetable(context: context)
+                            await viewModel.importTimetable()
+                            if !viewModel.successMessage.isEmpty {
+                                onImported?()
+                            }
                         }
                     } label: {
                         HStack {
@@ -78,6 +84,9 @@ struct TimetableImportView: View {
                 }
             }
             .navigationTitle("Import Timetable")
+            .task {
+                viewModel.configure(context: context)
+            }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Cancel") {

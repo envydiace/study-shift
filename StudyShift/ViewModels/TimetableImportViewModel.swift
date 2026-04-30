@@ -6,8 +6,8 @@
 //
 
 import Foundation
-import SwiftData
 import Combine
+import SwiftData
 
 final class TimetableImportViewModel: ObservableObject {
     @Published var urlText: String = ""
@@ -16,18 +16,31 @@ final class TimetableImportViewModel: ObservableObject {
     @Published var isImporting: Bool = false
 
     private let service = TimetableImportService()
+    private var repository: ClassSessionRepository?
 
-    func importTimetable(context: ModelContext) async {
+    func configure(context: ModelContext) {
+        if repository == nil {
+            repository = ClassSessionRepository(context: context)
+        }
+    }
+
+    func importTimetable() async {
         isImporting = true
         errorMessage = ""
         successMessage = ""
+
+        guard let repository else {
+            errorMessage = "Repository is not ready."
+            isImporting = false
+            return
+        }
 
         do {
             let trimmedURL = urlText.trimmingCharacters(in: .whitespacesAndNewlines)
             let events = try await service.importEvents(from: trimmedURL)
 
-            for event in events {
-                let session = ClassSession(
+            let sessions = events.map { event in
+                ClassSession(
                     title: event.title,
                     sessionType: detectSessionType(from: event.title),
                     location: event.location,
@@ -38,11 +51,9 @@ final class TimetableImportViewModel: ObservableObject {
                     externalEventId: event.uid,
                     sourceURL: trimmedURL
                 )
-
-                context.insert(session)
             }
 
-            try context.save()
+            try repository.insert(sessions)
 
             successMessage = "Imported \(events.count) class sessions successfully."
             print("Imported \(events.count) class sessions.")

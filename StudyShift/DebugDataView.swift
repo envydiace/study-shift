@@ -9,11 +9,14 @@ import SwiftUI
 import SwiftData
 
 struct DebugDataView: View {
-    @Query private var subjects: [Subject]
-    @Query private var assessments: [Assessment]
-    @Query private var tasks: [TodoTask]
-    @Query private var shifts: [WorkShift]
-    @Query private var sessions: [ClassSession]
+    @Environment(\.modelContext) private var context
+
+    @State private var subjects: [Subject] = []
+    @State private var assessments: [Assessment] = []
+    @State private var tasks: [TodoTask] = []
+    @State private var shifts: [WorkShift] = []
+    @State private var sessions: [ClassSession] = []
+    @State private var errorMessage: String = ""
 
     var body: some View {
         NavigationStack {
@@ -112,10 +115,56 @@ struct DebugDataView: View {
             }
             .navigationTitle("Debug Data")
             .toolbar {
-                Button("Print All CSV") {
-                    printAllCSV()
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Reload") {
+                        loadData()
+                    }
+                }
+
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Print All CSV") {
+                        printAllCSV()
+                    }
                 }
             }
+            .task {
+                loadData()
+            }
+            .refreshable {
+                loadData()
+            }
+            .alert("Error", isPresented: errorBinding) {
+                Button("OK", role: .cancel) {
+                    errorMessage = ""
+                }
+            } message: {
+                Text(errorMessage)
+            }
+        }
+    }
+
+    private var errorBinding: Binding<Bool> {
+        Binding(
+            get: { !errorMessage.isEmpty },
+            set: { isPresented in
+                if !isPresented {
+                    errorMessage = ""
+                }
+            }
+        )
+    }
+
+    private func loadData() {
+        do {
+            subjects = try SubjectRepository(context: context).fetchAll()
+            assessments = try AssessmentRepository(context: context).fetchAll()
+            tasks = try TodoTaskRepository(context: context).fetchAll()
+            shifts = try WorkShiftRepository(context: context).fetchAll()
+            sessions = try ClassSessionRepository(context: context).fetchAll()
+            errorMessage = ""
+        } catch {
+            errorMessage = "Failed to load debug data."
+            print("Failed to load debug data: \(error)")
         }
     }
 
@@ -343,4 +392,22 @@ struct DebugDataView: View {
 
 #Preview {
     DebugDataView()
+        .modelContainer(debugDataPreviewContainer)
+}
+
+private var debugDataPreviewContainer: ModelContainer {
+    let schema = Schema([
+        Subject.self,
+        Assessment.self,
+        TodoTask.self,
+        WorkShift.self,
+        ClassSession.self
+    ])
+    let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+
+    do {
+        return try ModelContainer(for: schema, configurations: [configuration])
+    } catch {
+        fatalError("Failed to create preview container: \(error)")
+    }
 }

@@ -11,9 +11,12 @@ struct SubjectFormView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
 
+    let onSaved: (() -> Void)?
+
     @StateObject private var viewModel: SubjectFormViewModel
 
-    init() {
+    init(onSaved: (() -> Void)? = nil) {
+        self.onSaved = onSaved
         _viewModel = StateObject(wrappedValue: SubjectFormViewModel())
     }
     
@@ -68,13 +71,17 @@ struct SubjectFormView: View {
 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Save") {
-                        let success = viewModel.saveSubject(context: context)
+                        let success = viewModel.saveSubject()
 
                         if success {
+                            onSaved?()
                             dismiss()
                         }
                     }
                 }
+            }
+            .task {
+                viewModel.configure(context: context)
             }
         }
     }

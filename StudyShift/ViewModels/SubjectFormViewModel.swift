@@ -6,8 +6,8 @@
 //
 
 import Foundation
-import SwiftData
 import Combine
+import SwiftData
 
 final class SubjectFormViewModel: ObservableObject {
     @Published var name: String = ""
@@ -29,7 +29,21 @@ final class SubjectFormViewModel: ObservableObject {
         "#CA8A04"
     ]
 
-    func saveSubject(context: ModelContext) -> Bool {
+    private var repository: SubjectRepository?
+
+    func configure(context: ModelContext) {
+        if repository == nil {
+            repository = SubjectRepository(context: context)
+        }
+    }
+
+    func saveSubject() -> Bool {
+        guard let repository else {
+            showValidationError = true
+            validationMessage = "Repository is not ready."
+            return false
+        }
+
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedCode = code.trimmingCharacters(in: .whitespacesAndNewlines)
 
@@ -52,10 +66,8 @@ final class SubjectFormViewModel: ObservableObject {
             targetGrade: targetGrade
         )
 
-        context.insert(subject)
-
         do {
-            try context.save()
+            try repository.insert(subject)
             print("Subject saved successfully!")
             return true
         } catch {

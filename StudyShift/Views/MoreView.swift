@@ -22,6 +22,14 @@ struct MoreView: View {
                 NavigationLink("Import Timetable") {
                     TimetableImportView()
                 }
+                
+                NavigationLink("Subject List") {
+                    SubjectListView()
+                }
+                
+                NavigationLink("Debug Data View") {
+                    DebugDataView()
+                }
 
                 NavigationLink("Profile / Settings") {
                     ProfileSettingsView()

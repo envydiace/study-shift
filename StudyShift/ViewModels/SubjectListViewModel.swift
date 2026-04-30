@@ -6,24 +6,51 @@
 //
 
 import Foundation
-import SwiftData
 import Combine
+import SwiftData
 
 final class SubjectListViewModel: ObservableObject {
     @Published var showAddSubjectForm: Bool = false
-    
     @Published var showImportTimetableView = false
+    @Published var subjects: [Subject] = []
+    @Published var errorMessage: String = ""
 
-    func deleteSubject(
-        _ subject: Subject,
-        context: ModelContext
-    ) {
-        context.delete(subject)
+    private var repository: SubjectRepository?
+
+    func configure(context: ModelContext) {
+        if repository == nil {
+            repository = SubjectRepository(context: context)
+        }
+    }
+
+    func loadSubjects() {
+        guard let repository else {
+            errorMessage = "Repository is not ready."
+            return
+        }
 
         do {
-            try context.save()
+            subjects = try repository.fetchAll()
+            errorMessage = ""
+        } catch {
+            errorMessage = "Failed to load subjects."
+            print("Failed to load subjects: \(error)")
+        }
+    }
+
+    func deleteSubject(_ subject: Subject) {
+        guard let repository else {
+            errorMessage = "Repository is not ready."
+            return
+        }
+
+        do {
+            try repository.delete(subject)
+            subjects.removeAll { $0.id == subject.id }
+            errorMessage = ""
             print("Subject deleted successfully!")
         } catch {
+            errorMessage = "Failed to delete subject."
             print("Failed to delete subject: \(error)")
         }
     }
