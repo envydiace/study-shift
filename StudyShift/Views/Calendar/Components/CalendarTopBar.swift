@@ -12,6 +12,7 @@ struct CalendarTopBar: View {
     let onPreviousWeek: () -> Void
     let onNextWeek: () -> Void
     let onToday: () -> Void
+    let onTitleTap: () -> Void
 
     var body: some View {
         HStack {
@@ -23,9 +24,19 @@ struct CalendarTopBar: View {
 
             Spacer()
 
-            Text(title)
-                .font(.headline)
-                .fontWeight(.semibold)
+            Button {
+                onTitleTap()
+            } label: {
+                HStack(spacing: 4) {
+                    Text(title)
+                        .font(.headline)
+                        .fontWeight(.semibold)
+
+                    Image(systemName: "chevron.down")
+                        .font(.caption)
+                }
+                .foregroundColor(.primary)
+            }
 
             Spacer()
 

@@ -13,6 +13,7 @@ final class CalendarViewModel: ObservableObject {
     @Published var selectedDate: Date
     @Published var weekStartDate: Date
     @Published var events: [CalendarEvent]
+    @Published var isShowingMonthPicker: Bool = false
 
     init(
         selectedDate: Date = Date(),
@@ -21,6 +22,12 @@ final class CalendarViewModel: ObservableObject {
         self.selectedDate = selectedDate
         self.weekStartDate = CalendarViewModel.startOfWeek(for: selectedDate)
         self.events = events
+    }
+
+    var monthTitle: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMMM yyyy"
+        return formatter.string(from: selectedDate)
     }
 
     var weekDates: [Date] {
@@ -33,10 +40,22 @@ final class CalendarViewModel: ObservableObject {
         }
     }
 
-    var monthTitle: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMMM yyyy"
-        return formatter.string(from: selectedDate)
+    func showMonthPicker() {
+        isShowingMonthPicker = true
+    }
+
+    func hideMonthPicker() {
+        isShowingMonthPicker = false
+    }
+
+    func selectDate(_ date: Date) {
+        selectedDate = date
+        weekStartDate = CalendarViewModel.startOfWeek(for: date)
+    }
+
+    func selectMonth(_ date: Date) {
+        selectDate(date)
+        hideMonthPicker()
     }
 
     func goToPreviousWeek() {
@@ -46,8 +65,8 @@ final class CalendarViewModel: ObservableObject {
             to: weekStartDate
         ) else { return }
 
-        weekStartDate = CalendarViewModel.startOfWeek(for: newDate)
         selectedDate = newDate
+        weekStartDate = CalendarViewModel.startOfWeek(for: newDate)
     }
 
     func goToNextWeek() {
@@ -57,19 +76,17 @@ final class CalendarViewModel: ObservableObject {
             to: weekStartDate
         ) else { return }
 
-        weekStartDate = CalendarViewModel.startOfWeek(for: newDate)
         selectedDate = newDate
+        weekStartDate = CalendarViewModel.startOfWeek(for: newDate)
     }
 
     func goToToday() {
-        let today = Date()
-        selectedDate = today
-        weekStartDate = CalendarViewModel.startOfWeek(for: today)
+        selectDate(Date())
     }
 
     private static var calendar: Calendar {
         var calendar = Calendar.current
-        calendar.firstWeekday = 2 // Monday
+        calendar.firstWeekday = 2
         return calendar
     }
 

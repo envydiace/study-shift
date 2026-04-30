@@ -15,12 +15,19 @@ struct WeekHeaderView: View {
             Spacer(minLength: 50)
             ForEach(weekDates, id: \.self) { date in
                 VStack {
-                    Text(dayOfWeek(from: date))   // Mon
+                    Text(dayOfWeek(from: date))
                         .font(.caption)
                         .foregroundColor(.gray)
 
-                    Text(dayNumber(from: date))   // 29
+                    Text(dayNumber(from: date))
                         .font(.headline)
+                        .fontWeight(isToday(date) ? .bold : .semibold)
+                        .foregroundColor(isToday(date) ? .white : .primary)
+                        .frame(width: 34, height: 34)
+                        .background(
+                            Circle()
+                                .fill(isToday(date) ? Color.blue : Color.clear)
+                        )
                 }
                 .frame(maxWidth: .infinity)
             }
@@ -28,6 +35,10 @@ struct WeekHeaderView: View {
         .padding(.vertical, 6)
         .background(Color(.systemGray6))
     }
+    
+    private func isToday(_ date: Date) -> Bool {
+            Calendar.current.isDateInToday(date)
+        }
 
     func dayOfWeek(from date: Date) -> String {
         let f = DateFormatter()
@@ -41,6 +52,11 @@ struct WeekHeaderView: View {
         return f.string(from: date)
     }
 }
+
+#Preview {
+    WeekHeaderView(weekDates: currentWeek(from: Date()))
+}
+
 func currentWeek(from date: Date) -> [Date] {
     let calendar = Calendar.current
     let startOfWeek = calendar.dateInterval(of: .weekOfYear, for: date)!.start
@@ -48,8 +64,4 @@ func currentWeek(from date: Date) -> [Date] {
     return (0..<7).map {
         calendar.date(byAdding: .day, value: $0, to: startOfWeek)!
     }
-}
-
-#Preview {
-    WeekHeaderView(weekDates: currentWeek(from: Date()))
 }

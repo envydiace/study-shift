@@ -11,16 +11,16 @@ struct CalendarView: View {
     @StateObject private var viewModel: CalendarViewModel
 
     init(
-            selectedDate: Date = Date(),
-            events: [CalendarEvent] = []
-        ) {
-            _viewModel = StateObject(
-                wrappedValue: CalendarViewModel(
-                    selectedDate: selectedDate,
-                    events: events
-                )
+        selectedDate: Date = Date(),
+        events: [CalendarEvent] = []
+    ) {
+        _viewModel = StateObject(
+            wrappedValue: CalendarViewModel(
+                selectedDate: selectedDate,
+                events: events
             )
-        }
+        )
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -40,6 +40,9 @@ struct CalendarView: View {
                     withAnimation {
                         viewModel.goToToday()
                     }
+                },
+                onTitleTap: {
+                    viewModel.showMonthPicker()
                 }
             )
 
@@ -74,6 +77,16 @@ struct CalendarView: View {
                         }
                     }
             )
+        }
+        .sheet(isPresented: $viewModel.isShowingMonthPicker) {
+            MonthPickerView(
+                selectedDate: viewModel.selectedDate
+            ) { newDate in
+                withAnimation {
+                    viewModel.selectMonth(newDate)
+                }
+            }
+            .presentationDetents([.medium])
         }
     }
 }
