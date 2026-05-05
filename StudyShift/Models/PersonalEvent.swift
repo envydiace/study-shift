@@ -1,0 +1,32 @@
+//
+//  PersonalEvent.swift
+//  StudyShift
+//
+//  Created by Đức Anh on 6/5/26.
+//
+
+import Foundation
+import SwiftData
+
+@Model
+final class PersonalEvent {
+    var title: String
+    var startDate: Date?
+    var endDate: Date?
+    var location: String?
+    var notes: String?
+
+    init(
+        title: String,
+        startDate: Date? = nil,
+        endDate: Date? = nil,
+        location: String? = nil,
+        notes: String? = nil
+    ) {
+        self.title = title
+        self.startDate = startDate
+        self.endDate = endDate
+        self.location = location
+        self.notes = notes
+    }
+}

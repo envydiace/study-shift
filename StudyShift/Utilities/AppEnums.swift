@@ -46,6 +46,29 @@ enum TaskPriority: String, Codable, CaseIterable {
     case high = "High"
 }
 
+enum EventType: String, CaseIterable, Hashable {
+    case personal = "Personal"
+    case classSession = "Class"
+    case assessment = "Assessment"
+    case studyTask = "Study Task"
+    case workShift = "Work Shift"
+
+    var iconName: String {
+        switch self {
+        case .personal:
+            return "person.fill"
+        case .classSession:
+            return "book.fill"
+        case .assessment:
+            return "doc.text.fill"
+        case .studyTask:
+            return "checklist"
+        case .workShift:
+            return "briefcase.fill"
+        }
+    }
+}
+
 enum Constants {
     static let hourHeight: CGFloat = 60   // 1 hour = 60px
     static let dayWidth: CGFloat = 80     // each day column

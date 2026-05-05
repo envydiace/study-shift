@@ -1,0 +1,158 @@
+//
+//  AddEventViewModel.swift
+//  StudyShift
+//
+//  Created by Đức Anh on 6/5/26.
+//
+
+import Foundation
+import Combine
+
+final class AddEventViewModel: ObservableObject {
+    @Published var title: String = ""
+    @Published var eventType: EventType = .personal
+
+    @Published var startDate: Date? = Date()
+    @Published var endDate: Date? = Calendar.current.date(byAdding: .hour, value: 1, to: Date())
+
+    @Published var location: String = ""
+    @Published var notes: String = ""
+
+    // Class fields
+    @Published var subjectName: String = ""
+    @Published var repeatWeekly: Bool = false
+
+    // Assessment fields
+    @Published var assessmentType: String = "Assignment"
+    @Published var weight: String = ""
+    @Published var totalMark: String = ""
+
+    // Study task fields
+    @Published var linkedAssessment: String = ""
+    @Published var isCompleted: Bool = false
+
+    // Work shift fields
+    @Published var workplace: String = ""
+
+    @Published var errorMessage: String?
+
+    let assessmentTypes = [
+        "Assignment",
+        "Quiz",
+        "Exam",
+        "Presentation",
+        "Project"
+    ]
+
+    var requiresStartAndEndDate: Bool {
+        switch eventType {
+        case .studyTask:
+            return false
+        case .personal, .classSession, .assessment, .workShift:
+            return true
+        }
+    }
+
+    var saveButtonTitle: String {
+        switch eventType {
+        case .personal:
+            return "Add Personal Event"
+        case .classSession:
+            return "Add Class"
+        case .assessment:
+            return "Add Assessment"
+        case .studyTask:
+            return "Add Study Task"
+        case .workShift:
+            return "Add Work Shift"
+        }
+    }
+
+    func eventTypeChanged() {
+        if requiresStartAndEndDate {
+            if startDate == nil {
+                startDate = Date()
+            }
+
+            if endDate == nil {
+                endDate = Calendar.current.date(
+                    byAdding: .hour,
+                    value: 1,
+                    to: startDate ?? Date()
+                )
+            }
+        }
+
+        errorMessage = nil
+    }
+
+    func updateEndDateIfNeeded() {
+        guard let startDate else { return }
+
+        if let endDate {
+            if endDate < startDate {
+                self.endDate = Calendar.current.date(
+                    byAdding: .hour,
+                    value: 1,
+                    to: startDate
+                )
+            }
+        }
+    }
+
+    var isValid: Bool {
+        validationMessage == nil
+    }
+
+    var validationMessage: String? {
+        let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        guard !trimmedTitle.isEmpty else {
+            return "Title is required."
+        }
+
+        if requiresStartAndEndDate {
+            guard startDate != nil else {
+                return "Start date is required for \(eventType.rawValue)."
+            }
+
+            guard endDate != nil else {
+                return "End date is required for \(eventType.rawValue)."
+            }
+        }
+
+        if let startDate, let endDate, endDate < startDate {
+            return "End date must be after start date."
+        }
+
+        return nil
+    }
+
+    func validate() -> Bool {
+        if let message = validationMessage {
+            errorMessage = message
+            return false
+        }
+
+        errorMessage = nil
+        return true
+    }
+
+    func save() {
+        guard validate() else { return }
+
+        // Later, replace this with SwiftData insert logic.
+        switch eventType {
+        case .personal:
+            print("Save Personal Event")
+        case .classSession:
+            print("Save Class Session")
+        case .assessment:
+            print("Save Assessment")
+        case .studyTask:
+            print("Save Study Task")
+        case .workShift:
+            print("Save Work Shift")
+        }
+    }
+}
