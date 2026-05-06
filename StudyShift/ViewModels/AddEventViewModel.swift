@@ -23,7 +23,6 @@ final class AddEventViewModel: ObservableObject {
     // Class fields
     @Published var subjects: [Subject] = []
     @Published var subjectName: String = ""
-    @Published var repeatWeekly: Bool = false
 
     // Assessment fields
     @Published var assessmentType: String = "Assignment"

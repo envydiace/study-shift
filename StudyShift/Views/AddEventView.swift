@@ -166,9 +166,6 @@ struct AddEventView: View {
     private var classFields: some View {
         sectionCard {
             VStack(alignment: .leading, spacing: 12) {
-                Text("Class Details")
-                    .font(.headline)
-                
                 HStack {
                     Text("Subjects")
                         .font(.headline)
@@ -188,15 +185,12 @@ struct AddEventView: View {
                     .pickerStyle(.menu)
                 }
                 
+                Divider()
 
-                TextField("Location optional", text: $viewModel.location)
-                    .inputStyle()
-
-                Toggle("Repeat weekly", isOn: $viewModel.repeatWeekly)
-
-                TextField("Notes optional", text: $viewModel.notes, axis: .vertical)
-                    .lineLimit(3...6)
-                    .inputStyle()
+                TextField("Location (optional)", text: $viewModel.location)
+                    .padding(.horizontal, 1)
+                    .padding(.vertical, 1)
+                    .autocorrectionDisabled(true)
             }
         }
     }
