@@ -9,8 +9,9 @@ import Foundation
 import Combine
 
 final class AddEventViewModel: ObservableObject {
+    @Published var eventType: EventType
+    
     @Published var title: String = ""
-    @Published var eventType: EventType = .personal
 
     @Published var startDate: Date? = Date()
     @Published var endDate: Date? = Calendar.current.date(byAdding: .hour, value: 1, to: Date())
@@ -27,15 +28,15 @@ final class AddEventViewModel: ObservableObject {
     @Published var weight: String = ""
     @Published var totalMark: String = ""
 
-    // Study task fields
-    @Published var linkedAssessment: String = ""
-    @Published var isCompleted: Bool = false
-
     // Work shift fields
     @Published var workplace: String = ""
 
     @Published var errorMessage: String?
 
+    init (eventType: EventType) {
+        self.eventType = eventType
+    }
+    
     let assessmentTypes = [
         "Assignment",
         "Quiz",
@@ -43,15 +44,6 @@ final class AddEventViewModel: ObservableObject {
         "Presentation",
         "Project"
     ]
-
-    var requiresStartAndEndDate: Bool {
-        switch eventType {
-        case .studyTask:
-            return false
-        case .personal, .classSession, .assessment, .workShift:
-            return true
-        }
-    }
 
     var saveButtonTitle: String {
         switch eventType {
@@ -61,26 +53,22 @@ final class AddEventViewModel: ObservableObject {
             return "Add Class"
         case .assessment:
             return "Add Assessment"
-        case .studyTask:
-            return "Add Study Task"
         case .workShift:
             return "Add Work Shift"
         }
     }
 
     func eventTypeChanged() {
-        if requiresStartAndEndDate {
-            if startDate == nil {
-                startDate = Date()
-            }
+        if startDate == nil {
+            startDate = Date()
+        }
 
-            if endDate == nil {
-                endDate = Calendar.current.date(
-                    byAdding: .hour,
-                    value: 1,
-                    to: startDate ?? Date()
-                )
-            }
+        if endDate == nil {
+            endDate = Calendar.current.date(
+                byAdding: .hour,
+                value: 1,
+                to: startDate ?? Date()
+            )
         }
 
         errorMessage = nil
@@ -111,14 +99,12 @@ final class AddEventViewModel: ObservableObject {
             return "Title is required."
         }
 
-        if requiresStartAndEndDate {
-            guard startDate != nil else {
-                return "Start date is required for \(eventType.rawValue)."
-            }
+        guard startDate != nil else {
+            return "Start date is required for \(eventType.rawValue)."
+        }
 
-            guard endDate != nil else {
-                return "End date is required for \(eventType.rawValue)."
-            }
+        guard endDate != nil else {
+            return "End date is required for \(eventType.rawValue)."
         }
 
         if let startDate, let endDate, endDate < startDate {
@@ -149,8 +135,6 @@ final class AddEventViewModel: ObservableObject {
             print("Save Class Session")
         case .assessment:
             print("Save Assessment")
-        case .studyTask:
-            print("Save Study Task")
         case .workShift:
             print("Save Work Shift")
         }

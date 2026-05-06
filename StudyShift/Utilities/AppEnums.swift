@@ -50,7 +50,6 @@ enum EventType: String, CaseIterable, Hashable {
     case personal = "Personal"
     case classSession = "Class"
     case assessment = "Assessment"
-    case studyTask = "Study Task"
     case workShift = "Work Shift"
 
     var iconName: String {
@@ -61,8 +60,6 @@ enum EventType: String, CaseIterable, Hashable {
             return "book.fill"
         case .assessment:
             return "doc.text.fill"
-        case .studyTask:
-            return "checklist"
         case .workShift:
             return "briefcase.fill"
         }
