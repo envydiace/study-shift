@@ -7,6 +7,7 @@
 
 import Foundation
 import Combine
+import SwiftData
 
 final class AddEventViewModel: ObservableObject {
     @Published var eventType: EventType
@@ -20,6 +21,7 @@ final class AddEventViewModel: ObservableObject {
     @Published var notes: String = ""
 
     // Class fields
+    @Published var subjects: [Subject] = []
     @Published var subjectName: String = ""
     @Published var repeatWeekly: Bool = false
 
@@ -32,9 +34,17 @@ final class AddEventViewModel: ObservableObject {
     @Published var workplace: String = ""
 
     @Published var errorMessage: String?
+    
+    private var subjectRepository: SubjectRepository?
 
     init (eventType: EventType) {
         self.eventType = eventType
+    }
+
+    func configure(context: ModelContext) {
+        if subjectRepository == nil {
+            subjectRepository = SubjectRepository(context: context)
+        }
     }
     
     let assessmentTypes = [
@@ -55,6 +65,22 @@ final class AddEventViewModel: ObservableObject {
             return "Add Assessment"
         case .workShift:
             return "Add Work Shift"
+        }
+    }
+    
+    func loadSubjects() {
+        guard let subjectRepository
+        else {
+            errorMessage = "Repository is not ready."
+            return
+        }
+
+        do {
+            subjects = try subjectRepository.fetchAll()
+            errorMessage = ""
+        } catch {
+            errorMessage = "Failed to load calendar events."
+            print("Failed to load calendar events: \(error)")
         }
     }
 

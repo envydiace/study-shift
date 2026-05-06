@@ -6,8 +6,10 @@
 //
 
 import SwiftUI
+import SwiftData
 
-struct AddEventScreen: View {
+struct AddEventView: View {
+    @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel: AddEventViewModel
 
@@ -38,7 +40,7 @@ struct AddEventScreen: View {
                 }
                 .padding()
             }
-            .background(Color(.systemGroupedBackground))
+            .background(.tealMain)
             .navigationTitle("Add Event")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -47,6 +49,10 @@ struct AddEventScreen: View {
                         dismiss()
                     }
                 }
+            }
+            .task {
+                viewModel.configure(context: context)
+                viewModel.loadSubjects()
             }
         }
     }
@@ -58,19 +64,12 @@ struct AddEventScreen: View {
                 .padding(.horizontal, 1)
                 .padding(.vertical, 1)
                 .autocorrectionDisabled(true)
-                .background(Color(.systemBackground))
         }
     }
 
     private var dateSection: some View {
         sectionCard {
             VStack(alignment: .leading, spacing: 16) {
-                HStack {
-                    Text("Date & Time")
-                        .font(.headline)
-                    
-                    Spacer()
-                }
                 
                 DatePicker(
                     "Start Date",
@@ -85,6 +84,9 @@ struct AddEventScreen: View {
                     ),
                     displayedComponents: [.date, .hourAndMinute]
                 )
+                .font(.headline)
+                
+                Divider()
                 
                 DatePicker(
                     "End Date",
@@ -98,6 +100,7 @@ struct AddEventScreen: View {
                     ),
                     displayedComponents: [.date, .hourAndMinute]
                 )
+                .font(.headline)
             }
         }
     }
@@ -141,16 +144,21 @@ struct AddEventScreen: View {
 
     private var personalFields: some View {
         sectionCard {
-            VStack(alignment: .leading, spacing: 12) {
-                Text("Personal Details")
-                    .font(.headline)
+            VStack() {
 
-                TextField("Location optional", text: $viewModel.location)
-                    .inputStyle()
-
-                TextField("Notes optional", text: $viewModel.notes, axis: .vertical)
+                TextField("Location (optional)", text: $viewModel.location)
+                    .padding(.horizontal, 1)
+                    .padding(.vertical, 1)
+                    .autocorrectionDisabled(true)
+                    
+                Divider()
+                
+                TextField("Notes (optional)", text: $viewModel.notes, axis: .vertical)
                     .lineLimit(3...6)
-                    .inputStyle()
+                    .padding(.horizontal, 1)
+                    .padding(.vertical, 1)
+                    .autocorrectionDisabled(true)
+                    
             }
         }
     }
@@ -160,9 +168,26 @@ struct AddEventScreen: View {
             VStack(alignment: .leading, spacing: 12) {
                 Text("Class Details")
                     .font(.headline)
+                
+                HStack {
+                    Text("Subjects")
+                        .font(.headline)
+                    
+                    Spacer()
+                    
+                    Picker("Subject", selection: $viewModel.subjectName) {
+                        Text("No subject")
+                            .tag("")
 
-                TextField("Subject name optional", text: $viewModel.subjectName)
-                    .inputStyle()
+                        ForEach(viewModel.subjects) { subject in
+                            Divider()
+                            Text("\(subject.code) - \(subject.name)")
+                                .tag(subject.name)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                }
+                
 
                 TextField("Location optional", text: $viewModel.location)
                     .inputStyle()
@@ -305,5 +330,21 @@ private extension View {
 }
 
 #Preview {
-    AddEventScreen()
+    let container: ModelContainer = {
+        let container = try! ModelContainer(
+            for: Subject.self,
+            configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+        )
+
+        let context = container.mainContext
+
+        context.insert(Subject(name: "iOS Development", code: "IOS101"))
+        context.insert(Subject(name: "Cloud Computing", code: "CC202"))
+        context.insert(Subject(name: "Database Systems", code: "DB301"))
+
+        return container
+    }()
+
+    return AddEventView(eventType: .classSession)
+        .modelContainer(container)
 }
