@@ -49,7 +49,6 @@ enum TaskPriority: String, Codable, CaseIterable {
 enum EventType: String, CaseIterable, Hashable {
     case personal = "Personal"
     case classSession = "Class"
-    case assessment = "Assessment"
     case workShift = "Work Shift"
 
     var iconName: String {
@@ -58,8 +57,6 @@ enum EventType: String, CaseIterable, Hashable {
             return "person.fill"
         case .classSession:
             return "book.fill"
-        case .assessment:
-            return "doc.text.fill"
         case .workShift:
             return "briefcase.fill"
         }

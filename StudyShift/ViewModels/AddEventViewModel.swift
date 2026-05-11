@@ -35,7 +35,6 @@ final class AddEventViewModel: ObservableObject {
     @Published var didSaveSuccessfully: Bool = false
     @Published var errorMessage: String?
     
-    private var assessmentRepository: AssessmentRepository?
     private var subjectRepository: SubjectRepository?
     private var classSessionReposiitory: ClassSessionRepository?
     private var personalEventRepository: PersonalEventRepository?
@@ -46,9 +45,6 @@ final class AddEventViewModel: ObservableObject {
     }
 
     func configure(context: ModelContext) {
-        if assessmentRepository == nil {
-            assessmentRepository = AssessmentRepository(context: context)
-        }
         if subjectRepository == nil {
             subjectRepository = SubjectRepository(context: context)
         }
@@ -62,14 +58,6 @@ final class AddEventViewModel: ObservableObject {
             workShiftRepository = WorkShiftRepository(context: context)
         }
     }
-    
-    let assessmentTypes = [
-        "Assignment",
-        "Quiz",
-        "Exam",
-        "Presentation",
-        "Project"
-    ]
 
     var saveButtonTitle: String {
         switch eventType {
@@ -77,8 +65,6 @@ final class AddEventViewModel: ObservableObject {
             return "Add Personal Event"
         case .classSession:
             return "Add Class"
-        case .assessment:
-            return "Add Assessment"
         case .workShift:
             return "Add Work Shift"
         }
@@ -178,10 +164,6 @@ final class AddEventViewModel: ObservableObject {
             case .classSession:
                 try saveClassSession()
 
-            case .assessment:
-//                try saveAssessment()
-                print("Save assessment success!")
-
             case .workShift:
                 try saveWorkShift()
             }
@@ -195,23 +177,6 @@ final class AddEventViewModel: ObservableObject {
             print("Save event error:", error)
         }
     }
-    
-//    private func saveAssessment() throws {
-//        guard let startDate, let endDate else { return }
-//
-//        let assessment = Assessment(
-//            title: trimmedTitle,
-//            startDate: startDate,
-//            endDate: endDate,
-//            subjectName: emptyToNil(subjectName),
-//            assessmentType: assessmentType,
-//            weight: Double(weight),
-//            totalMark: Double(totalMark),
-//            notes: emptyToNil(notes)
-//        )
-//
-//        try assessmentRepository?.insert(assessment)
-//    }
     
     private func savePersonalEvent() throws {
         let event = PersonalEvent(

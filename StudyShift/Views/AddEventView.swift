@@ -139,9 +139,6 @@ struct AddEventView: View {
         case .classSession:
             classFields
 
-        case .assessment:
-            assessmentFields
-
         case .workShift:
             workShiftFields
         }
@@ -196,36 +193,6 @@ struct AddEventView: View {
                     .padding(.horizontal, 1)
                     .padding(.vertical, 1)
                     .autocorrectionDisabled(true)
-            }
-        }
-    }
-
-    private var assessmentFields: some View {
-        sectionCard {
-            VStack(alignment: .leading, spacing: 12) {
-                Text("Assessment Details")
-                    .font(.headline)
-
-                Picker("Assessment Type", selection: $viewModel.assessmentType) {
-                    ForEach(viewModel.assessmentTypes, id: \.self) { type in
-                        Text(type).tag(type)
-                    }
-                }
-
-                TextField("Subject optional", text: $viewModel.subjectCode)
-                    .inputStyle()
-
-                TextField("Weight (%) optional", text: $viewModel.weight)
-                    .keyboardType(.decimalPad)
-                    .inputStyle()
-
-                TextField("Total mark optional", text: $viewModel.totalMark)
-                    .keyboardType(.decimalPad)
-                    .inputStyle()
-
-                TextField("Notes optional", text: $viewModel.notes, axis: .vertical)
-                    .lineLimit(3...6)
-                    .inputStyle()
             }
         }
     }
