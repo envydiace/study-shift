@@ -9,7 +9,8 @@ import Foundation
 import SwiftData
 
 @Model
-final class PersonalEvent {
+final class PersonalEvent: UUIDIdentifiableModel {
+    var id = UUID()
     var title: String
     var startDate: Date?
     var endDate: Date?
@@ -17,12 +18,14 @@ final class PersonalEvent {
     var notes: String?
 
     init(
+        id: UUID = UUID(),
         title: String,
         startDate: Date? = nil,
         endDate: Date? = nil,
         location: String? = nil,
         notes: String? = nil
     ) {
+        self.id = id
         self.title = title
         self.startDate = startDate
         self.endDate = endDate

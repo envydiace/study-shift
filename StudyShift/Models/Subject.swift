@@ -9,7 +9,7 @@ import Foundation
 import SwiftData
 
 @Model
-final class Subject {
+final class Subject: UUIDIdentifiableModel {
     var id: UUID
     var name: String
     var code: String

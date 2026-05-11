@@ -4,15 +4,44 @@
 //
 //  Created by Đức Anh on 11/5/26.
 //
-
 import SwiftUI
 
 struct EventDetailView: View {
     @Environment(\.dismiss) private var dismiss
 
     let event: CalendarEvent
+    let onDelete: () -> Void
+
+    @State private var showDeleteConfirm = false
 
     var body: some View {
+        ZStack {
+            mainContent
+                .blur(radius: showDeleteConfirm ? 3 : 0)
+
+            if showDeleteConfirm {
+                Color.black.opacity(0.25)
+                    .ignoresSafeArea()
+                    .onTapGesture {
+                        withAnimation {
+                            showDeleteConfirm = false
+                        }
+                    }
+
+                VStack {
+                    Spacer()
+
+                    deleteConfirmPopup
+                        .padding(.horizontal)
+                        .padding(.bottom, 90)
+                }
+                .transition(.opacity)
+            }
+        }
+        .animation(.easeInOut(duration: 0.2), value: showDeleteConfirm)
+    }
+    
+    private var mainContent: some View {
         NavigationStack {
             VStack(alignment: .leading, spacing: 20) {
                 HStack(spacing: 12) {
@@ -52,6 +81,20 @@ struct EventDetailView: View {
                 }
 
                 Spacer()
+
+                Button(role: .destructive) {
+                    withAnimation {
+                        showDeleteConfirm = true
+                    }
+                } label: {
+                    Text("Delete Event")
+                        .fontWeight(.semibold)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.red.opacity(0.12))
+                        .foregroundColor(.red)
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                }
             }
             .padding()
             .navigationTitle("Event Detail")
@@ -65,6 +108,41 @@ struct EventDetailView: View {
             }
         }
     }
+    
+    private var deleteConfirmPopup: some View {
+            VStack(spacing: 16) {
+                Text("Are you sure you want to delete this event?")
+                    .font(.subheadline)
+                    .multilineTextAlignment(.center)
+
+                Divider()
+
+                Button(role: .destructive) {
+                    onDelete()
+                    dismiss()
+                } label: {
+                    Text("Delete Event")
+                        .fontWeight(.semibold)
+                        .frame(maxWidth: .infinity)
+                }
+
+                Divider()
+
+                Button {
+                    withAnimation {
+                        showDeleteConfirm = false
+                    }
+                } label: {
+                    Text("Cancel")
+                        .fontWeight(.semibold)
+                        .frame(maxWidth: .infinity)
+                }
+            }
+            .padding(.vertical, 16)
+            .background(Color(.secondarySystemBackground))
+            .clipShape(RoundedRectangle(cornerRadius: 18))
+            .shadow(radius: 12)
+        }
 
     private func detailRow(
         icon: String,
@@ -112,10 +190,19 @@ struct EventDetailView: View {
 #Preview {
     EventDetailView(
         event: CalendarEvent(
+            sourceId: UUID(),
             title: "iOS Development Class",
             start: Date(),
-            end: Calendar.current.date(byAdding: .hour, value: 2, to: Date()) ?? Date(),
-            color: .blue
-        )
+            end: Calendar.current.date(
+                byAdding: .hour,
+                value: 2,
+                to: Date()
+            ) ?? Date(),
+            color: .blue,
+            type: .classSession
+        ),
+        onDelete: {
+            print("Preview delete tapped")
+        }
     )
 }

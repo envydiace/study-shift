@@ -9,7 +9,7 @@ import Foundation
 import SwiftData
 
 @Model
-final class Assessment {
+final class Assessment: UUIDIdentifiableModel {
     var id: UUID
     var title: String
     var assessmentType: AssessmentType

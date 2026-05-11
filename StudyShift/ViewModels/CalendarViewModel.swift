@@ -122,6 +122,40 @@ final class CalendarViewModel: ObservableObject {
         selectedEvent = nil
         isShowingEventDetail = false
     }
+    
+    func deleteSelectedEvent() {
+        guard let selectedEvent,
+              let classSessionRepository,
+              let workShiftRepository,
+              let todoTaskRepository,
+              let personalEventRepository
+        else {
+            errorMessage = "Repository is not ready."
+            return
+        }
+
+        do {
+            switch selectedEvent.type {
+            case .personal:
+                try personalEventRepository.deleteById(selectedEvent.sourceId)
+
+            case .classSession:
+                try classSessionRepository.deleteById(selectedEvent.sourceId)
+
+            case .workShift:
+                try workShiftRepository.deleteById(selectedEvent.sourceId)
+
+            case .task:
+                try todoTaskRepository.deleteById(selectedEvent.sourceId)
+            }
+            errorMessage = ""
+            loadEvents()
+            self.selectedEvent = nil
+            isShowingEventDetail = false
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
 
     func selectDate(_ date: Date) {
         selectedDate = date
@@ -173,19 +207,23 @@ final class CalendarViewModel: ObservableObject {
 
         updatedEvents += classSessions.map {
             CalendarEvent(
+                sourceId: $0.id,
                 title: $0.title,
                 start: $0.startTime,
                 end: $0.endTime,
-                color: .blue
+                color: .blue,
+                type: .classSession
             )
         }
 
         updatedEvents += workShifts.map {
             CalendarEvent(
+                sourceId: $0.id,
                 title: $0.workplace.isEmpty ? $0.title : $0.workplace,
                 start: $0.startTime,
                 end: $0.endTime,
-                color: .orange
+                color: .orange,
+                type: .workShift
             )
         }
 
@@ -196,10 +234,12 @@ final class CalendarViewModel: ObservableObject {
             }
 
             return CalendarEvent(
+                sourceId: task.id,
                 title: task.title,
                 start: start,
                 end: end,
-                color: .green
+                color: .green,
+                type: .task
             )
         }
         
@@ -209,10 +249,12 @@ final class CalendarViewModel: ObservableObject {
                 return nil
             }
             return CalendarEvent(
+                sourceId: personalEvent.id,
                 title: personalEvent.title,
                 start: start,
                 end: end,
-                color: .red
+                color: .red,
+                type: .personal
             )
         }
 

@@ -39,6 +39,7 @@ final class AddEventViewModel: ObservableObject {
     private var classSessionReposiitory: ClassSessionRepository?
     private var personalEventRepository: PersonalEventRepository?
     private var workShiftRepository: WorkShiftRepository?
+    private var todoTaskRepository: TodoTaskRepository?
 
     init (eventType: EventType) {
         self.eventType = eventType
@@ -57,6 +58,9 @@ final class AddEventViewModel: ObservableObject {
         if workShiftRepository == nil {
             workShiftRepository = WorkShiftRepository(context: context)
         }
+        if todoTaskRepository == nil {
+            todoTaskRepository = TodoTaskRepository(context: context)
+        }
     }
 
     var saveButtonTitle: String {
@@ -67,6 +71,8 @@ final class AddEventViewModel: ObservableObject {
             return "Add Class"
         case .workShift:
             return "Add Work Shift"
+        case .task:
+            return "Add Task"
         }
     }
     
@@ -155,19 +161,22 @@ final class AddEventViewModel: ObservableObject {
     func save() {
         guard validate() else { return }
 
-        print("Save event!")
         do {
             switch eventType {
             case .personal:
                 try savePersonalEvent()
-
+                
             case .classSession:
                 try saveClassSession()
-
+                
             case .workShift:
                 try saveWorkShift()
+                
+            case .task:
+                errorMessage = "Tasks are created from the Tasks screen."
+                didSaveSuccessfully = false
+                return
             }
-
             errorMessage = nil
             didSaveSuccessfully = true
 
@@ -186,8 +195,6 @@ final class AddEventViewModel: ObservableObject {
             location: emptyToNil(location),
             notes: emptyToNil(notes)
         )
-        
-        print("Save Personal Event")
 
         try personalEventRepository?.insert(event)
     }

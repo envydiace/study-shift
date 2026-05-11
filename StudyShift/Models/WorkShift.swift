@@ -9,7 +9,7 @@ import Foundation
 import SwiftData
 
 @Model
-final class WorkShift {
+final class WorkShift: UUIDIdentifiableModel {
     var id: UUID
     var title: String
     var workplace: String

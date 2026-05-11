@@ -103,7 +103,12 @@ struct CalendarView: View {
         }
         .sheet(isPresented: $viewModel.isShowingEventDetail) {
             if let event = viewModel.selectedEvent {
-                EventDetailView(event: event)
+                EventDetailView(
+                    event: event,
+                    onDelete: {
+                        viewModel.deleteSelectedEvent()
+                    }
+                )
             }
         }
         .task {

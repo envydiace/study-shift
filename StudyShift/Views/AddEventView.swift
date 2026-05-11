@@ -117,7 +117,7 @@ struct AddEventView: View {
                     .font(.headline)
                 Spacer()
                 Picker("Event Type", selection: $viewModel.eventType) {
-                    ForEach(EventType.allCases, id: \.self) { type in
+                    ForEach(EventType.addEventTypes, id: \.self) { type in
                         Label(type.rawValue, systemImage: type.iconName)
                             .tag(type)
                     }
@@ -141,6 +141,11 @@ struct AddEventView: View {
 
         case .workShift:
             workShiftFields
+            
+        case .task:
+            Text("Tasks are created from the Tasks screen.")
+                .font(.footnote)
+                .foregroundColor(.secondary)
         }
     }
 

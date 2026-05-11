@@ -9,7 +9,7 @@ import Foundation
 import SwiftData
 
 @Model
-final class TodoTask {
+final class TodoTask: UUIDIdentifiableModel {
     var id: UUID
     var title: String
     var note: String

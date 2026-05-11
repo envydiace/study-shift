@@ -50,6 +50,15 @@ enum EventType: String, CaseIterable, Hashable {
     case personal = "Personal"
     case classSession = "Class"
     case workShift = "Work Shift"
+    case task = "Task"
+    
+    static var addEventTypes: [EventType] {
+        [
+            .personal,
+            .classSession,
+            .workShift
+        ]
+    }
 
     var iconName: String {
         switch self {
@@ -59,6 +68,8 @@ enum EventType: String, CaseIterable, Hashable {
             return "book.fill"
         case .workShift:
             return "briefcase.fill"
+        case .task:
+            return "task.fill"
         }
     }
 }

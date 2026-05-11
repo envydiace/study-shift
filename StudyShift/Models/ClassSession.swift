@@ -9,7 +9,7 @@ import Foundation
 import SwiftData
 
 @Model
-final class ClassSession {
+final class ClassSession: UUIDIdentifiableModel {
     var id = UUID()
     var title: String
     var location: String?
