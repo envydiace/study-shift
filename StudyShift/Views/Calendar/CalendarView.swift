@@ -94,7 +94,9 @@ struct CalendarView: View {
             .presentationDetents([.medium])
         }
         .sheet(isPresented: $viewModel.isShowingAddEventScreen) {
-            AddEventView()
+            AddEventView {
+                viewModel.loadEvents()
+            }
         }
         .task {
             viewModel.configure(context: context)

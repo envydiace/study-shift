@@ -12,8 +12,13 @@ struct AddEventView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel: AddEventViewModel
+    private let onSave: (() -> Void)?
 
-    init(eventType: EventType = .personal) {
+    init(
+        eventType: EventType = .personal,
+        onSave: (() -> Void)? = nil
+    ) {
+        self.onSave = onSave
         _viewModel = StateObject(wrappedValue: AddEventViewModel(eventType: eventType))
     }
     
@@ -255,6 +260,7 @@ struct AddEventView: View {
             viewModel.save()
 
             if viewModel.didSaveSuccessfully {
+                onSave?()
                 dismiss()
             }
         } label: {
