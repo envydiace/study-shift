@@ -12,7 +12,7 @@ struct MoreView: View {
         NavigationStack {
             List {
                 NavigationLink("Assessments") {
-                    AssessmentsView()
+                    AssignmentsView()
                 }
 
                 NavigationLink("Grade Tracker") {

@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct AssessmentsView: View {
+struct AssignmentsView: View {
     var body: some View {
         /// TODO: implement Assessments Screen
         /// edited the target device for debugging.
@@ -202,5 +202,5 @@ func makeBody(configuration: Configuration) -> some View {
 }
 
 #Preview {
-    AssessmentsView()
+    AssignmentsView()
 }
