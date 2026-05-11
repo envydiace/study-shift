@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct MainTabView: View {
     var body: some View {
@@ -45,4 +46,5 @@ struct MainTabView: View {
 
 #Preview {
     MainTabView()
+        .modelContainer(ModelContainerFactory.createPreviewContainer())
 }

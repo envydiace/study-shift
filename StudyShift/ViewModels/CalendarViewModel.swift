@@ -21,10 +21,12 @@ final class CalendarViewModel: ObservableObject {
     private var classSessionRepository: ClassSessionRepository?
     private var workShiftRepository: WorkShiftRepository?
     private var todoTaskRepository: TodoTaskRepository?
+    private var personalEventRepository: PersonalEventRepository?
 
     private var classSessions: [ClassSession] = []
     private var workShifts: [WorkShift] = []
     private var tasks: [TodoTask] = []
+    private var personalEvents: [PersonalEvent] = []
 
     init(
         selectedDate: Date = Date(),
@@ -47,12 +49,18 @@ final class CalendarViewModel: ObservableObject {
         if todoTaskRepository == nil {
             todoTaskRepository = TodoTaskRepository(context: context)
         }
+        
+        if personalEventRepository == nil {
+            personalEventRepository = PersonalEventRepository(context: context)
+        }
     }
 
     func loadEvents() {
         guard let classSessionRepository,
               let workShiftRepository,
-              let todoTaskRepository else {
+              let todoTaskRepository,
+              let personalEventRepository
+        else {
             errorMessage = "Repository is not ready."
             return
         }
@@ -61,6 +69,7 @@ final class CalendarViewModel: ObservableObject {
             classSessions = try classSessionRepository.fetchAll()
             workShifts = try workShiftRepository.fetchAll()
             tasks = try todoTaskRepository.fetchAll()
+            personalEvents = try personalEventRepository.fetchAll()
             errorMessage = ""
             rebuildEvents()
         } catch {
@@ -178,6 +187,19 @@ final class CalendarViewModel: ObservableObject {
                 start: start,
                 end: end,
                 color: .green
+            )
+        }
+        
+        updatedEvents += personalEvents.compactMap { personalEvent in
+            guard let start = personalEvent.startDate,
+                  let end = personalEvent.endDate else {
+                return nil
+            }
+            return CalendarEvent(
+                title: personalEvent.title,
+                start: start,
+                end: end,
+                color: .red
             )
         }
 

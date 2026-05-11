@@ -12,7 +12,7 @@ import SwiftData
 final class ClassSession {
     var id = UUID()
     var title: String
-    var location: String
+    var location: String?
     var startTime: Date
     var endTime: Date
 
@@ -24,7 +24,7 @@ final class ClassSession {
     init(
         id: UUID = UUID(),
         title: String,
-        location: String = "",
+        location: String?,
         startTime: Date,
         endTime: Date,
         externalEventId: String? = nil,

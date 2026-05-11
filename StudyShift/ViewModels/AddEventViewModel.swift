@@ -22,7 +22,7 @@ final class AddEventViewModel: ObservableObject {
 
     // Class fields
     @Published var subjects: [Subject] = []
-    @Published var subjectName: String = ""
+    @Published var subjectCode: String = ""
 
     // Assessment fields
     @Published var assessmentType: String = "Assignment"
@@ -32,17 +32,34 @@ final class AddEventViewModel: ObservableObject {
     // Work shift fields
     @Published var workplace: String = ""
 
+    @Published var didSaveSuccessfully: Bool = false
     @Published var errorMessage: String?
     
+    private var assessmentRepository: AssessmentRepository?
     private var subjectRepository: SubjectRepository?
+    private var classSessionReposiitory: ClassSessionRepository?
+    private var personalEventRepository: PersonalEventRepository?
+    private var workShiftRepository: WorkShiftRepository?
 
     init (eventType: EventType) {
         self.eventType = eventType
     }
 
     func configure(context: ModelContext) {
+        if assessmentRepository == nil {
+            assessmentRepository = AssessmentRepository(context: context)
+        }
         if subjectRepository == nil {
             subjectRepository = SubjectRepository(context: context)
+        }
+        if classSessionReposiitory == nil {
+            classSessionReposiitory = ClassSessionRepository(context: context)
+        }
+        if personalEventRepository == nil {
+            personalEventRepository = PersonalEventRepository(context: context)
+        }
+        if workShiftRepository == nil {
+            workShiftRepository = WorkShiftRepository(context: context)
         }
     }
     
@@ -152,16 +169,100 @@ final class AddEventViewModel: ObservableObject {
     func save() {
         guard validate() else { return }
 
-        // Later, replace this with SwiftData insert logic.
-        switch eventType {
-        case .personal:
-            print("Save Personal Event")
-        case .classSession:
-            print("Save Class Session")
-        case .assessment:
-            print("Save Assessment")
-        case .workShift:
-            print("Save Work Shift")
+        print("Save event!")
+        do {
+            switch eventType {
+            case .personal:
+                try savePersonalEvent()
+
+            case .classSession:
+                try saveClassSession()
+
+            case .assessment:
+//                try saveAssessment()
+                print("Save assessment success!")
+
+            case .workShift:
+                try saveWorkShift()
+            }
+
+            errorMessage = nil
+            didSaveSuccessfully = true
+
+        } catch {
+            errorMessage = "Failed to save event. Please try again."
+            didSaveSuccessfully = false
+            print("Save event error:", error)
         }
     }
+    
+//    private func saveAssessment() throws {
+//        guard let startDate, let endDate else { return }
+//
+//        let assessment = Assessment(
+//            title: trimmedTitle,
+//            startDate: startDate,
+//            endDate: endDate,
+//            subjectName: emptyToNil(subjectName),
+//            assessmentType: assessmentType,
+//            weight: Double(weight),
+//            totalMark: Double(totalMark),
+//            notes: emptyToNil(notes)
+//        )
+//
+//        try assessmentRepository?.insert(assessment)
+//    }
+    
+    private func savePersonalEvent() throws {
+        let event = PersonalEvent(
+            title: trimmedTitle,
+            startDate: startDate,
+            endDate: endDate,
+            location: emptyToNil(location),
+            notes: emptyToNil(notes)
+        )
+        
+        print("Save Personal Event")
+
+        try personalEventRepository?.insert(event)
+    }
+    
+    private func saveClassSession() throws {
+        guard let startDate, let endDate else { return }
+
+        let subject = try subjectRepository?.fetchByCode(subjectCode)
+        let classSession = ClassSession(
+            title: trimmedTitle,
+            location: emptyToNil(location),
+            startTime: startDate,
+            endTime: endDate,
+            subject: subject
+        )
+
+        try classSessionReposiitory?.insert(classSession)
+    }
+    
+    private func saveWorkShift() throws{
+        guard let startDate, let endDate else { return }
+
+        let workShift = WorkShift(
+            title: trimmedTitle,
+            workplace: emptyToNil(workplace) ?? "",
+            startTime: startDate,
+            endTime: endDate,
+            note: emptyToNil(notes) ?? ""
+        )
+
+        try workShiftRepository?.insert(workShift)
+    }
+    
+    private var trimmedTitle: String {
+        title.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private func emptyToNil(_ value: String) -> String? {
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? nil : trimmed
+    }
+    
 }

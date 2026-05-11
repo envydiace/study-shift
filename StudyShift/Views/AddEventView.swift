@@ -172,14 +172,14 @@ struct AddEventView: View {
                     
                     Spacer()
                     
-                    Picker("Subject", selection: $viewModel.subjectName) {
+                    Picker("Subject", selection: $viewModel.subjectCode) {
                         Text("No subject")
                             .tag("")
 
                         ForEach(viewModel.subjects) { subject in
                             Divider()
                             Text("\(subject.code) - \(subject.name)")
-                                .tag(subject.name)
+                                .tag(subject.code)
                         }
                     }
                     .pickerStyle(.menu)
@@ -207,7 +207,7 @@ struct AddEventView: View {
                     }
                 }
 
-                TextField("Subject optional", text: $viewModel.subjectName)
+                TextField("Subject optional", text: $viewModel.subjectCode)
                     .inputStyle()
 
                 TextField("Weight (%) optional", text: $viewModel.weight)
@@ -254,7 +254,7 @@ struct AddEventView: View {
         Button {
             viewModel.save()
 
-            if viewModel.errorMessage == nil {
+            if viewModel.didSaveSuccessfully {
                 dismiss()
             }
         } label: {
@@ -324,21 +324,6 @@ private extension View {
 }
 
 #Preview {
-    let container: ModelContainer = {
-        let container = try! ModelContainer(
-            for: Subject.self,
-            configurations: ModelConfiguration(isStoredInMemoryOnly: true)
-        )
-
-        let context = container.mainContext
-
-        context.insert(Subject(name: "iOS Development", code: "IOS101"))
-        context.insert(Subject(name: "Cloud Computing", code: "CC202"))
-        context.insert(Subject(name: "Database Systems", code: "DB301"))
-
-        return container
-    }()
-
-    return AddEventView(eventType: .classSession)
-        .modelContainer(container)
+    AddEventView(eventType: .classSession)
+        .modelContainer(ModelContainerFactory.createPreviewContainer())
 }

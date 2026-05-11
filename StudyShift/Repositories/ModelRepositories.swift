@@ -98,6 +98,19 @@ struct WorkShiftRepository: RepositoryProtocol {
     }
 }
 
+struct PersonalEventRepository: RepositoryProtocol {
+    typealias Entity = PersonalEvent
+
+    let context: ModelContext
+
+    func fetchAll() throws -> [PersonalEvent] {
+        let descriptor = FetchDescriptor<PersonalEvent>(
+            sortBy: [SortDescriptor(\.startDate)]
+        )
+        return try fetch(with: descriptor)
+    }
+}
+
 struct StudentProfileRepository: RepositoryProtocol {
     typealias Entity = StudentProfile
 

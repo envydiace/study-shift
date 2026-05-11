@@ -10,23 +10,7 @@ import SwiftData
 
 @main
 struct StudyShiftApp: App {
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            StudentProfile.self,
-            Subject.self,
-            ClassSession.self,
-            Assessment.self,
-            TodoTask.self,
-            WorkShift.self
-        ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-
-        do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
-        } catch {
-            fatalError("Could not create ModelContainer: \(error)")
-        }
-    }()
+    private let sharedModelContainer = ModelContainerFactory.createAppContainer()
 
     var body: some Scene {
         WindowGroup {

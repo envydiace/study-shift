@@ -295,7 +295,6 @@ struct DebugDataView: View {
                 "workplace",
                 "startTime",
                 "endTime",
-                "breakMinutes",
                 "totalHours",
                 "note"
             ],
@@ -306,7 +305,6 @@ struct DebugDataView: View {
                     shift.workplace,
                     formatDate(shift.startTime),
                     formatDate(shift.endTime),
-                    "\(shift.breakMinutes)",
                     formatDouble(shift.totalHours),
                     shift.note
                 ]
@@ -330,7 +328,7 @@ struct DebugDataView: View {
                 [
                     session.id.uuidString,
                     session.title,
-                    session.location,
+                    session.location ?? "",
                     formatDate(session.startTime),
                     formatDate(session.endTime),
                     session.subject?.id.uuidString ?? "",
