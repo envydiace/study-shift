@@ -57,7 +57,10 @@ struct CalendarView: View {
 
             WeekCalendarView(
                 events: $viewModel.events,
-                weekStartDate: viewModel.weekStartDate
+                weekStartDate: viewModel.weekStartDate,
+                onEventTap: { event in
+                    viewModel.showEventDetail(event)
+                }
             )
             .gesture(
                 DragGesture()
@@ -96,6 +99,11 @@ struct CalendarView: View {
         .sheet(isPresented: $viewModel.isShowingAddEventScreen) {
             AddEventView {
                 viewModel.loadEvents()
+            }
+        }
+        .sheet(isPresented: $viewModel.isShowingEventDetail) {
+            if let event = viewModel.selectedEvent {
+                EventDetailView(event: event)
             }
         }
         .task {
