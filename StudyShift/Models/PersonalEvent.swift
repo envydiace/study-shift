@@ -16,6 +16,10 @@ final class PersonalEvent: UUIDIdentifiableModel {
     var endDate: Date?
     var location: String?
     var notes: String?
+    
+    var notificationEnabled: Bool
+    var reminderMinutesBefore: Int?
+    var notificationId: String?
 
     init(
         id: UUID = UUID(),
@@ -23,7 +27,10 @@ final class PersonalEvent: UUIDIdentifiableModel {
         startDate: Date? = nil,
         endDate: Date? = nil,
         location: String? = nil,
-        notes: String? = nil
+        notes: String? = nil,
+        notificationEnabled: Bool = false,
+        reminderMinutesBefore: Int? = nil,
+        notificationId: String? = nil
     ) {
         self.id = id
         self.title = title
@@ -31,5 +38,8 @@ final class PersonalEvent: UUIDIdentifiableModel {
         self.endDate = endDate
         self.location = location
         self.notes = notes
+        self.notificationEnabled = notificationEnabled
+        self.reminderMinutesBefore = reminderMinutesBefore
+        self.notificationId = notificationId
     }
 }

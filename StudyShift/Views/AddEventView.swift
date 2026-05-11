@@ -30,6 +30,8 @@ struct AddEventView: View {
                     
                     dateSection
 
+                    notificationSection
+                    
                     eventTypeSection
 
                     dynamicFieldsSection
@@ -107,6 +109,37 @@ struct AddEventView: View {
                 )
                 .font(.headline)
             }
+        }
+    }
+    
+    private var notificationSection: some View {
+        sectionCard {
+            VStack(spacing: 0) {
+                Toggle("Notification", isOn: $viewModel.notificationEnabled)
+                    .padding(.vertical, 12)
+                    .font(.headline)
+
+                if viewModel.notificationEnabled {
+                    Divider()
+
+                    HStack {
+                        Text("Remind me")
+
+                        Picker("Remind me", selection: $viewModel.reminderMinutesBefore) {
+                            ForEach(viewModel.reminderOptions, id: \.self) { minutes in
+                                Text("\(minutes) minutes before")
+                                    .tag(minutes)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                        .frame(maxWidth: .infinity, alignment: .trailing)
+                        
+                    }
+                    .padding(.vertical, 12)
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+                }
+            }
+            .animation(.easeInOut(duration: 0.1), value: viewModel.notificationEnabled)
         }
     }
 

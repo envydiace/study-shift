@@ -24,16 +24,17 @@ final class AddEventViewModel: ObservableObject {
     @Published var subjects: [Subject] = []
     @Published var subjectCode: String = ""
 
-    // Assessment fields
-    @Published var assessmentType: String = "Assignment"
-    @Published var weight: String = ""
-    @Published var totalMark: String = ""
-
     // Work shift fields
     @Published var workplace: String = ""
 
     @Published var didSaveSuccessfully: Bool = false
     @Published var errorMessage: String?
+    
+    @Published var notificationEnabled: Bool = false
+    @Published var reminderMinutesBefore: Int = 30
+    private var notificationId: String? = nil
+
+    let reminderOptions = [5, 10, 15, 30, 60, 120]
     
     private var subjectRepository: SubjectRepository?
     private var classSessionReposiitory: ClassSessionRepository?
@@ -160,11 +161,13 @@ final class AddEventViewModel: ObservableObject {
 
     func save() {
         guard validate() else { return }
-
+        
+        notificationId = notificationEnabled ? UUID().uuidString : nil
         do {
             switch eventType {
             case .personal:
                 try savePersonalEvent()
+                schedulePersonalEventNotification()
                 
             case .classSession:
                 try saveClassSession()
@@ -193,7 +196,10 @@ final class AddEventViewModel: ObservableObject {
             startDate: startDate,
             endDate: endDate,
             location: emptyToNil(location),
-            notes: emptyToNil(notes)
+            notes: emptyToNil(notes),
+            notificationEnabled: notificationEnabled,
+            reminderMinutesBefore: notificationEnabled ? reminderMinutesBefore : nil,
+            notificationId: notificationId
         )
 
         try personalEventRepository?.insert(event)
@@ -226,6 +232,34 @@ final class AddEventViewModel: ObservableObject {
         )
 
         try workShiftRepository?.insert(workShift)
+    }
+    
+    private func schedulePersonalEventNotification() {
+        if notificationEnabled,
+           let notificationId,
+           let startDate,
+           let endDate
+        {
+            
+            let body = "\(DateFormatHelper.formatHourMinute(startDate)) - \(DateFormatHelper.formatHourMinute(endDate))"
+            scheduleEventNotification(notificationId: notificationId, title: trimmedTitle, body: body, eventStartDate: startDate, minutesBefore: reminderMinutesBefore)
+        }
+    }
+    
+    private func scheduleEventNotification(notificationId: String, title: String, body: String, eventStartDate: Date, minutesBefore: Int) {
+        Task {
+            do {
+                try await NotificationService.shared.scheduleEventNotification(
+                    id: notificationId,
+                    title: title,
+                    body: body,
+                    eventStartDate: eventStartDate,
+                    minutesBefore: minutesBefore
+                )
+            } catch {
+                print("Failed to schedule notification:", error)
+            }
+        }
     }
     
     private var trimmedTitle: String {

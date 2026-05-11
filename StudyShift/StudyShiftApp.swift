@@ -15,6 +15,9 @@ struct StudyShiftApp: App {
     var body: some Scene {
         WindowGroup {
             MainTabView()
+                .task {
+                    _ = await NotificationService.shared.requestPermission()
+                }
         }
         .modelContainer(sharedModelContainer)
     }

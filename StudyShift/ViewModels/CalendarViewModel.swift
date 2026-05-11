@@ -137,6 +137,10 @@ final class CalendarViewModel: ObservableObject {
         do {
             switch selectedEvent.type {
             case .personal:
+                if let notificationId = try personalEventRepository.fetchById(selectedEvent.sourceId)?.notificationId {
+                    NotificationService.shared.cancelNotification(id: notificationId)
+                }
+
                 try personalEventRepository.deleteById(selectedEvent.sourceId)
 
             case .classSession:
