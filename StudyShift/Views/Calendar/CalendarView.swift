@@ -45,6 +45,9 @@ struct CalendarView: View {
                 },
                 onTitleTap: {
                     viewModel.showMonthPicker()
+                },
+                onAddEvent: {
+                    viewModel.showAddEventScreen()
                 }
             )
 
@@ -89,6 +92,9 @@ struct CalendarView: View {
                 }
             }
             .presentationDetents([.medium])
+        }
+        .sheet(isPresented: $viewModel.isShowingAddEventScreen) {
+            AddEventView()
         }
         .task {
             viewModel.configure(context: context)

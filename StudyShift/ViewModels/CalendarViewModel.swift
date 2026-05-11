@@ -15,6 +15,7 @@ final class CalendarViewModel: ObservableObject {
     @Published var weekStartDate: Date
     @Published var events: [CalendarEvent]
     @Published var isShowingMonthPicker: Bool = false
+    @Published var isShowingAddEventScreen: Bool = false
     @Published var errorMessage: String = ""
 
     private var classSessionRepository: ClassSessionRepository?
@@ -90,6 +91,14 @@ final class CalendarViewModel: ObservableObject {
 
     func hideMonthPicker() {
         isShowingMonthPicker = false
+    }
+    
+    func showAddEventScreen() {
+        isShowingAddEventScreen = true
+    }
+
+    func hideAddEventScreen() {
+        isShowingAddEventScreen = false
     }
 
     func selectDate(_ date: Date) {

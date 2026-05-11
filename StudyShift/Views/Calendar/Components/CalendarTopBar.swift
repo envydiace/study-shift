@@ -13,6 +13,7 @@ struct CalendarTopBar: View {
     let onNextWeek: () -> Void
     let onToday: () -> Void
     let onTitleTap: () -> Void
+    let onAddEvent: () -> Void
 
     var body: some View {
         HStack {
@@ -48,6 +49,13 @@ struct CalendarTopBar: View {
 
             Button("Today") {
                 onToday()
+            }
+            
+            Button {
+                onAddEvent()
+            } label: {
+                Image(systemName: "plus.circle.fill")
+                    .font(.title3)
             }
         }
         .padding(.horizontal)
