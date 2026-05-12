@@ -35,7 +35,7 @@ enum ModelContainerFactory {
         }
     }
 
-    static func createPreviewContainer() -> ModelContainer {
+    @MainActor static func createPreviewContainer() -> ModelContainer {
         let configuration = ModelConfiguration(
             schema: appSchema,
             isStoredInMemoryOnly: true
@@ -55,7 +55,7 @@ enum ModelContainerFactory {
         }
     }
 
-    private static func insertPreviewData(into container: ModelContainer) {
+    @MainActor private static func insertPreviewData(into container: ModelContainer) {
         let context = container.mainContext
 
         context.insert(
