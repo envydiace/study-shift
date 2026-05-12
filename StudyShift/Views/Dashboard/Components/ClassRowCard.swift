@@ -23,7 +23,7 @@ struct ClassRowCard: View {
             }
 
             VStack(alignment: .leading, spacing: 4) {
-                Text("\(item.subjectCode) \(item.subjectName)")
+                Text(item.title)
                     .font(.system(size: 17, weight: .medium))
                     .lineLimit(1)
 
@@ -35,15 +35,18 @@ struct ClassRowCard: View {
             Spacer()
 
             VStack(alignment: .trailing, spacing: 8) {
-                Text("CB11.02.101")
-                    .font(.system(size: 11, weight: .bold))
-                    .foregroundColor(.green.opacity(0.85))
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 6)
-                    .background(
-                        Capsule()
-                            .fill(Color.green.opacity(0.18))
-                    )
+                if let location = item.location,
+                   !location.isEmpty {
+                    Text(location)
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundColor(.green.opacity(0.85))
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(
+                            Capsule()
+                                .fill(Color.green.opacity(0.18))
+                        )
+                }
 
                 Text(item.dayText)
                     .font(.system(size: 11, weight: .bold))

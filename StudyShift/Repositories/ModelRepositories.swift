@@ -83,6 +83,24 @@ struct ClassSessionRepository: RepositoryProtocol {
         )
         return try fetch(with: descriptor).first
     }
+    
+    func fetchUpcomingClasses(
+            from date: Date = Date(),
+            limit: Int = 2
+        ) throws -> [ClassSession] {
+        let descriptor = FetchDescriptor<ClassSession>(
+            predicate: #Predicate { classSession in
+                classSession.startTime > date
+            },
+            sortBy: [
+                SortDescriptor(\.startTime, order: .forward)
+            ]
+        )
+
+        let result = try fetch(with: descriptor)
+
+        return Array(result.prefix(limit))
+    }
 }
 
 struct WorkShiftRepository: RepositoryProtocol {

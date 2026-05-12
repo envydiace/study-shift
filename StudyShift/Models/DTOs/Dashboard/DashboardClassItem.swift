@@ -9,9 +9,9 @@ import Foundation
 
 struct DashboardClassItem: Identifiable {
     let id = UUID()
-    let subjectCode: String
-    let subjectName: String
+    let title: String
     let startTime: String
     let endTime: String
     let dayText: String
+    let location: String?
 }

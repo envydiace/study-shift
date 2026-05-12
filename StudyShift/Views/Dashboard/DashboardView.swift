@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct DashboardView: View {
+    @Environment(\.modelContext) private var modelContext
     @StateObject private var viewModel = DashboardViewModel()
 
     private let screenBackground = Color.tealMain
@@ -45,6 +46,10 @@ struct DashboardView: View {
             .padding(.bottom, 24)
         }
         .background(screenBackground.ignoresSafeArea())
+        .task {
+            viewModel.configure(context: modelContext)
+            viewModel.loadUpcomingClasses()
+        }
     }
     
     var headerSection: some View {

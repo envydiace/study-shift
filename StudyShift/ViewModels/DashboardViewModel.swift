@@ -8,8 +8,11 @@
 import Foundation
 import Combine
 import SwiftUI
+import SwiftData
 
 final class DashboardViewModel: ObservableObject {
+    @Published var errorMessage: String?
+    
     @Published var greetingTitle: String = "Hi, Welcome Back"
     @Published var greetingSubtitle: String = "Good Morning"
 
@@ -33,22 +36,7 @@ final class DashboardViewModel: ObservableObject {
         )
     ]
 
-    @Published var upcomingClasses: [DashboardClassItem] = [
-        DashboardClassItem(
-            subjectCode: "42904",
-            subjectName: "Cloud Computing",
-            startTime: "10:00",
-            endTime: "12:00",
-            dayText: "Monday"
-        ),
-        DashboardClassItem(
-            subjectCode: "32541",
-            subjectName: "Project Management",
-            startTime: "13:00",
-            endTime: "15:00",
-            dayText: "Monday"
-        )
-    ]
+    @Published var upcomingClasses: [DashboardClassItem] = []
 
     @Published var upcomingDeadlines: [DashboardDeadlineItem] = [
         DashboardDeadlineItem(
@@ -66,4 +54,38 @@ final class DashboardViewModel: ObservableObject {
             statusBackground: Color.yellow.opacity(0.28)
         )
     ]
+    
+    private var classSessionRepository: ClassSessionRepository?
+
+    func configure(context: ModelContext) {
+        self.classSessionRepository = ClassSessionRepository(context: context)
+    }
+
+    func loadUpcomingClasses() {
+        guard let classSessionRepository else {
+            errorMessage = "Class session repository is not configured."
+            return
+        }
+
+        do {
+            upcomingClasses = try classSessionRepository.fetchUpcomingClasses(
+                from: Date(),
+                limit: 2
+            ).map { classSession in
+                DashboardClassItem(
+                    title: classSession.title,
+                    startTime: DateFormatHelper.formatHourMinute(classSession.startTime),
+                    endTime: DateFormatHelper.formatHourMinute(classSession.endTime),
+                    dayText: DateFormatHelper.formatHourMinute(classSession.startTime),
+                    location: classSession.location
+                )
+            }
+
+            errorMessage = nil
+        } catch {
+            errorMessage = "Failed to load upcoming classes."
+            print("Load upcoming classes error:", error)
+        }
+    }
+    
 }
