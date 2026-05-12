@@ -10,6 +10,7 @@ import SwiftUI
 struct WeekCalendarView: View {
     @Binding var events: [CalendarEvent]
     let weekStartDate: Date
+    let onEventTap: (CalendarEvent) -> Void
 
     private let hourHeight: CGFloat = 40
 
@@ -29,7 +30,7 @@ struct WeekCalendarView: View {
                             hourHeight: hourHeight,
                             dayWidth: dayWidth
                         ) {
-                            print("Tapped:", event.title)
+                            onEventTap(event)
                         }
                     }
                 }

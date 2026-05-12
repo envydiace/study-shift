@@ -9,13 +9,12 @@ import Foundation
 import SwiftData
 
 @Model
-final class WorkShift {
+final class WorkShift: UUIDIdentifiableModel {
     var id: UUID
     var title: String
     var workplace: String
     var startTime: Date
     var endTime: Date
-    var breakMinutes: Int
     var note: String
 
     init(
@@ -24,7 +23,6 @@ final class WorkShift {
         workplace: String = "",
         startTime: Date,
         endTime: Date,
-        breakMinutes: Int = 0,
         note: String = ""
     ) {
         self.id = id
@@ -32,13 +30,13 @@ final class WorkShift {
         self.workplace = workplace
         self.startTime = startTime
         self.endTime = endTime
-        self.breakMinutes = breakMinutes
         self.note = note
     }
 
     var totalHours: Double {
-        let duration = endTime.timeIntervalSince(startTime) / 3600
-        let breakHours = Double(breakMinutes) / 60
-        return max(duration - breakHours, 0)
+//        let duration = endTime.timeIntervalSince(startTime) / 3600
+//        let breakHours = Double(breakMinutes) / 60
+//        return max(duration - breakHours, 0)
+        return endTime.timeIntervalSince(startTime) / 3600
     }
 }

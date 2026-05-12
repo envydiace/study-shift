@@ -1,5 +1,5 @@
 //
-//  AssessmentsView.swift
+//  AssignmentsView.swift
 //  StudyShift
 //
 //  Created by Đức Anh on 30/4/26.
@@ -7,47 +7,42 @@
 
 import SwiftUI
 
-struct AssessmentsView: View {
+struct AssignmentsView: View {
     var body: some View {
-        /// TODO: implement Assessments Screen
-        /// edited the target device for debugging.
-        
         ZStack {
             Color.tealMain
-                        .ignoresSafeArea()
+                .ignoresSafeArea()
 
-                    VStack(spacing: 0) {
-                        mainContent
-                            .padding(.vertical, 4)
-                        bottomTabBar
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(.tealMain)
-                    .clipShape(RoundedRectangle(cornerRadius: 30))
-                    
-                    
-                }
+            VStack(spacing: 0) {
+                mainContent
+                    .padding(.vertical, 4)
+//                        bottomTabBar
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(.tealMain)
+            .clipShape(RoundedRectangle(cornerRadius: 30))
+        }
     }
 }
 
 var mainContent: some View {
     VStack(alignment: .leading, spacing: 20) {
-        header
+//        header
 
-        assessmentCard(
+        assignmentCard(
             course: "42904 Cloud Computing",
             target: "HD",
-            title: "Assessment 2",
+            title: "Assignment 2",
             progress: 0.65,
             status: "Urgent",
             statusColor: .redMain,
             due: "Due Tomorrow"
         )
 
-        assessmentCard(
+        assignmentCard(
             course: "32541 Project Management",
             target: "D",
-            title: "Assessment 1",
+            title: "Assignment 1",
             progress: 0.42,
             status: "Soon",
             statusColor: .yellowMain,
@@ -57,7 +52,7 @@ var mainContent: some View {
         Spacer()
 
         VStack(spacing: 14) {
-            Button("+ Add Assessment") {}
+            Button("+ Add Assignment") {}
                 .buttonStyle(PillButtonStyle())
 
             Button("View Course List") {}
@@ -74,8 +69,8 @@ var mainContent: some View {
 var header: some View {
     HStack {
         VStack(alignment: .leading, spacing: 2) {
-            Text("Assessments")
-                .navigationTitle("Assessments")
+            Text("Assignments")
+                .navigationTitle("Assignments")
                 .font(.headline.bold())
 
             //can change to what semester student's at
@@ -94,7 +89,7 @@ var header: some View {
     .padding(.bottom, 12)
 }
 
-func assessmentCard(
+func assignmentCard(
     course: String,
     target: String,
     title: String,
@@ -202,5 +197,5 @@ func makeBody(configuration: Configuration) -> some View {
 }
 
 #Preview {
-    AssessmentsView()
+    AssignmentsView()
 }

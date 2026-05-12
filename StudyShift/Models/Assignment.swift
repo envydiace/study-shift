@@ -1,5 +1,5 @@
 //
-//  Assessment.swift
+//  Assignment.swift
 //  StudyShift
 //
 //  Created by Đức Anh on 26/4/26.
@@ -9,44 +9,44 @@ import Foundation
 import SwiftData
 
 @Model
-final class Assessment {
+final class Assignment: UUIDIdentifiableModel {
     var id: UUID
     var title: String
-    var assessmentType: AssessmentType
+    var assignmentType: AssignmentType
     var dueDate: Date
     var weight: Double
     var maxScore: Double
     var achievedScore: Double?
-    var status: AssessmentStatus
+    var status: AssignmentStatus
     var note: String
 
-    var subject: Subject?
+    var course: Course?
 
-    @Relationship(deleteRule: .cascade, inverse: \TodoTask.assessment)
+    @Relationship(deleteRule: .cascade, inverse: \TodoTask.assignment)
     var tasks: [TodoTask] = []
 
     init(
         id: UUID = UUID(),
         title: String,
-        assessmentType: AssessmentType,
+        assignmentType: AssignmentType,
         dueDate: Date,
         weight: Double,
         maxScore: Double = 100,
         achievedScore: Double? = nil,
-        status: AssessmentStatus = .notStarted,
+        status: AssignmentStatus = .notStarted,
         note: String = "",
-        subject: Subject? = nil
+        course: Course? = nil
     ) {
         self.id = id
         self.title = title
-        self.assessmentType = assessmentType
+        self.assignmentType = assignmentType
         self.dueDate = dueDate
         self.weight = weight
         self.maxScore = maxScore
         self.achievedScore = achievedScore
         self.status = status
         self.note = note
-        self.subject = subject
+        self.course = course
     }
 
     var weightedScore: Double {

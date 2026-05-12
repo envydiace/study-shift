@@ -15,15 +15,21 @@ final class CalendarViewModel: ObservableObject {
     @Published var weekStartDate: Date
     @Published var events: [CalendarEvent]
     @Published var isShowingMonthPicker: Bool = false
+    @Published var isShowingAddEventScreen: Bool = false
     @Published var errorMessage: String = ""
+    
+    @Published var selectedEvent: CalendarEvent?
+    @Published var isShowingEventDetail: Bool = false
 
     private var classSessionRepository: ClassSessionRepository?
     private var workShiftRepository: WorkShiftRepository?
     private var todoTaskRepository: TodoTaskRepository?
+    private var personalEventRepository: PersonalEventRepository?
 
     private var classSessions: [ClassSession] = []
     private var workShifts: [WorkShift] = []
     private var tasks: [TodoTask] = []
+    private var personalEvents: [PersonalEvent] = []
 
     init(
         selectedDate: Date = Date(),
@@ -46,12 +52,18 @@ final class CalendarViewModel: ObservableObject {
         if todoTaskRepository == nil {
             todoTaskRepository = TodoTaskRepository(context: context)
         }
+        
+        if personalEventRepository == nil {
+            personalEventRepository = PersonalEventRepository(context: context)
+        }
     }
 
     func loadEvents() {
         guard let classSessionRepository,
               let workShiftRepository,
-              let todoTaskRepository else {
+              let todoTaskRepository,
+              let personalEventRepository
+        else {
             errorMessage = "Repository is not ready."
             return
         }
@@ -60,6 +72,7 @@ final class CalendarViewModel: ObservableObject {
             classSessions = try classSessionRepository.fetchAll()
             workShifts = try workShiftRepository.fetchAll()
             tasks = try todoTaskRepository.fetchAll()
+            personalEvents = try personalEventRepository.fetchAll()
             errorMessage = ""
             rebuildEvents()
         } catch {
@@ -90,6 +103,62 @@ final class CalendarViewModel: ObservableObject {
 
     func hideMonthPicker() {
         isShowingMonthPicker = false
+    }
+    
+    func showAddEventScreen() {
+        isShowingAddEventScreen = true
+    }
+
+    func hideAddEventScreen() {
+        isShowingAddEventScreen = false
+    }
+    
+    func showEventDetail(_ event: CalendarEvent) {
+        selectedEvent = event
+        isShowingEventDetail = true
+    }
+
+    func hideEventDetail() {
+        selectedEvent = nil
+        isShowingEventDetail = false
+    }
+    
+    func deleteSelectedEvent() {
+        guard let selectedEvent,
+              let classSessionRepository,
+              let workShiftRepository,
+              let todoTaskRepository,
+              let personalEventRepository
+        else {
+            errorMessage = "Repository is not ready."
+            return
+        }
+
+        do {
+            switch selectedEvent.type {
+            case .personal:
+                if let notificationId = try personalEventRepository.fetchById(selectedEvent.sourceId)?.notificationId {
+                    NotificationService.shared.cancelNotification(id: notificationId)
+                }
+
+                try personalEventRepository.deleteById(selectedEvent.sourceId)
+
+            case .classSession:
+                try classSessionRepository.deleteById(selectedEvent.sourceId)
+
+            case .workShift:
+                try workShiftRepository.deleteById(selectedEvent.sourceId)
+
+            case .task:
+                try todoTaskRepository.deleteById(selectedEvent.sourceId)
+            }
+            errorMessage = ""
+            loadEvents()
+            self.selectedEvent = nil
+            isShowingEventDetail = false
+        } catch {
+            errorMessage = error.localizedDescription
+        }
     }
 
     func selectDate(_ date: Date) {
@@ -142,19 +211,23 @@ final class CalendarViewModel: ObservableObject {
 
         updatedEvents += classSessions.map {
             CalendarEvent(
+                sourceId: $0.id,
                 title: $0.title,
                 start: $0.startTime,
                 end: $0.endTime,
-                color: .blue
+                color: .blue,
+                type: .classSession
             )
         }
 
         updatedEvents += workShifts.map {
             CalendarEvent(
+                sourceId: $0.id,
                 title: $0.workplace.isEmpty ? $0.title : $0.workplace,
                 start: $0.startTime,
                 end: $0.endTime,
-                color: .orange
+                color: .orange,
+                type: .workShift
             )
         }
 
@@ -165,10 +238,27 @@ final class CalendarViewModel: ObservableObject {
             }
 
             return CalendarEvent(
+                sourceId: task.id,
                 title: task.title,
                 start: start,
                 end: end,
-                color: .green
+                color: .green,
+                type: .task
+            )
+        }
+        
+        updatedEvents += personalEvents.compactMap { personalEvent in
+            guard let start = personalEvent.startDate,
+                  let end = personalEvent.endDate else {
+                return nil
+            }
+            return CalendarEvent(
+                sourceId: personalEvent.id,
+                title: personalEvent.title,
+                start: start,
+                end: end,
+                color: .red,
+                type: .personal
             )
         }
 

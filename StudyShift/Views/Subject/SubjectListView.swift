@@ -1,5 +1,5 @@
 //
-//  SubjectListView.swift
+//  CourseListView.swift
 //  StudyShift
 //
 //  Created by Đức Anh on 26/4/26.
@@ -20,27 +20,27 @@ struct SubjectListView: View {
     var body: some View {
         NavigationStack {
             List {
-                ForEach(viewModel.subjects) { subject in
+                ForEach(viewModel.courses) { course in
                     Button {
-                        viewModel.printSubject(subject)
+                        viewModel.printCourse(course)
                     } label: {
                         HStack {
                             Circle()
-                                .fill(Color(hex: subject.colorHex))
+                                .fill(Color(hex: course.colorHex))
                                 .frame(width: 14, height: 14)
 
                             VStack(alignment: .leading) {
-                                Text(subject.name)
+                                Text(course.name)
                                     .font(.headline)
 
-                                Text(subject.code)
+                                Text(course.code)
                                     .font(.subheadline)
                                     .foregroundStyle(.secondary)
                             }
 
                             Spacer()
 
-                            Text(subject.targetGrade.rawValue)
+                            Text(course.targetGrade.rawValue)
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                         }
@@ -48,20 +48,20 @@ struct SubjectListView: View {
                     .buttonStyle(.plain)
                     .swipeActions {
                         Button(role: .destructive) {
-                            viewModel.deleteSubject(subject)
+                            viewModel.deleteCourse(course)
                         } label: {
                             Label("Delete", systemImage: "trash")
                         }
                     }
                 }
             }
-            .navigationTitle("Subjects")
+            .navigationTitle("Courses")
             .overlay {
-                if viewModel.subjects.isEmpty {
+                if viewModel.courses.isEmpty {
                     ContentUnavailableView(
-                        "No Subjects Yet",
+                        "No Courses Yet",
                         systemImage: "books.vertical",
-                        description: Text("Add a subject or import your timetable to get started.")
+                        description: Text("Add a course or import your timetable to get started.")
                     )
                 }
             }
@@ -76,28 +76,28 @@ struct SubjectListView: View {
 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        viewModel.showAddSubjectForm = true
+                        viewModel.showAddCourseForm = true
                     } label: {
                         Image(systemName: "plus")
                     }
                 }
             }
-            .sheet(isPresented: $viewModel.showAddSubjectForm) {
-                SubjectFormView {
-                    viewModel.loadSubjects()
+            .sheet(isPresented: $viewModel.showAddCourseForm) {
+                AddCourseView {
+                    viewModel.loadCourses()
                 }
             }
             .sheet(isPresented: $viewModel.showImportTimetableView) {
                 TimetableImportView {
-                    viewModel.loadSubjects()
+                    viewModel.loadCourses()
                 }
             }
             .task {
                 viewModel.configure(context: context)
-                viewModel.loadSubjects()
+                viewModel.loadCourses()
             }
             .refreshable {
-                viewModel.loadSubjects()
+                viewModel.loadCourses()
             }
             .alert("Error", isPresented: errorBinding) {
                 Button("OK", role: .cancel) {
@@ -123,14 +123,14 @@ struct SubjectListView: View {
 
 #Preview {
     SubjectListView()
-        .modelContainer(subjectListPreviewContainer)
+        .modelContainer(courseListPreviewContainer)
 }
 
-private var subjectListPreviewContainer: ModelContainer {
+private var courseListPreviewContainer: ModelContainer {
     let schema = Schema([
-        Subject.self,
+        Course.self,
         ClassSession.self,
-        Assessment.self,
+        Assignment.self,
         TodoTask.self
     ])
     let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)

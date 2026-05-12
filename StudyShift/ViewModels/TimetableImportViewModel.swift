@@ -17,15 +17,15 @@ final class TimetableImportViewModel: ObservableObject {
 
     private let service = TimetableImportService()
     private var classSessionRepository: ClassSessionRepository?
-    private var subjectRepository: SubjectRepository?
+    private var courseRepository: CourseRepository?
 
     func configure(context: ModelContext) {
         if classSessionRepository == nil {
             classSessionRepository = ClassSessionRepository(context: context)
         }
 
-        if subjectRepository == nil {
-            subjectRepository = SubjectRepository(context: context)
+        if courseRepository == nil {
+            courseRepository = CourseRepository(context: context)
         }
     }
 
@@ -34,7 +34,7 @@ final class TimetableImportViewModel: ObservableObject {
         errorMessage = ""
         successMessage = ""
 
-        guard let classSessionRepository, let subjectRepository else {
+        guard let classSessionRepository, let courseRepository else {
             errorMessage = "Repository is not ready."
             isImporting = false
             return
@@ -43,39 +43,39 @@ final class TimetableImportViewModel: ObservableObject {
         do {
             let trimmedURL = urlText.trimmingCharacters(in: .whitespacesAndNewlines)
             let events = try await service.importEvents(from: trimmedURL)
-            var subjectsByCode: [String: Subject] = [:]
-            var createdSubjectCount = 0
+            var coursesByCode: [String: Course] = [:]
+            var createdCourseCount = 0
             var createdSessionCount = 0
             var updatedSessionCount = 0
 
             for event in events {
-                guard let code = subjectCode(from: event.description) else {
+                guard let code = courseCode(from: event.description) else {
                     continue
                 }
 
-                if subjectsByCode[code] != nil {
+                if coursesByCode[code] != nil {
                     continue
                 }
 
-                if let existingSubject = try subjectRepository.fetchByCode(code) {
-                    subjectsByCode[code] = existingSubject
+                if let existingCourse = try courseRepository.fetchByCode(code) {
+                    coursesByCode[code] = existingCourse
                     continue
                 }
 
-                let subject = Subject(
-                    name: subjectName(from: event.title),
+                let course = Course(
+                    name: courseName(from: event.title),
                     code: code
                 )
-                try subjectRepository.insert(subject)
-                subjectsByCode[code] = subject
-                createdSubjectCount += 1
+                try courseRepository.insert(course)
+                coursesByCode[code] = course
+                createdCourseCount += 1
             }
 
             var newSessions: [ClassSession] = []
 
             for event in events {
-                let subject = subjectCode(from: event.description).flatMap {
-                    subjectsByCode[$0]
+                let course = courseCode(from: event.description).flatMap {
+                    coursesByCode[$0]
                 }
 
                 if let existingSession = try classSessionRepository.fetchByImportIdentity(
@@ -86,7 +86,7 @@ final class TimetableImportViewModel: ObservableObject {
                     existingSession.location = event.location
                     existingSession.startTime = event.startDate
                     existingSession.endTime = event.endDate
-                    existingSession.subject = subject
+                    existingSession.course = course
                     updatedSessionCount += 1
                     continue
                 }
@@ -98,7 +98,7 @@ final class TimetableImportViewModel: ObservableObject {
                     endTime: event.endDate,
                     externalEventId: event.uid,
                     sourceURL: trimmedURL,
-                    subject: subject
+                    course: course
                 )
 
                 newSessions.append(session)
@@ -113,7 +113,7 @@ final class TimetableImportViewModel: ObservableObject {
                 try classSessionRepository.save()
             }
 
-            successMessage = "Imported \(createdSessionCount) new sessions, updated \(updatedSessionCount) existing sessions, and created \(createdSubjectCount) subjects successfully."
+            successMessage = "Imported \(createdSessionCount) new sessions, updated \(updatedSessionCount) existing sessions, and created \(createdCourseCount) courses successfully."
             print("Imported \(events.count) class sessions.")
         } catch {
             errorMessage = "Failed to import timetable. Please check the URL and try again."
@@ -123,7 +123,7 @@ final class TimetableImportViewModel: ObservableObject {
         isImporting = false
     }
 
-    private func subjectCode(from description: String) -> String? {
+    private func courseCode(from description: String) -> String? {
         guard let firstLine = description
             .components(separatedBy: .newlines)
             .first?
@@ -138,7 +138,7 @@ final class TimetableImportViewModel: ObservableObject {
         return rawCode
     }
 
-    private func subjectName(from summary: String) -> String {
+    private func courseName(from summary: String) -> String {
         let name = summary
             .components(separatedBy: ",")
             .first?

@@ -9,7 +9,7 @@ import Foundation
 import SwiftData
 
 @Model
-final class TodoTask {
+final class TodoTask: UUIDIdentifiableModel {
     var id: UUID
     var title: String
     var note: String
@@ -20,8 +20,8 @@ final class TodoTask {
     var scheduledStart: Date?
     var scheduledEnd: Date?
 
-    var subject: Subject?
-    var assessment: Assessment?
+    var course: Course?
+    var assignment: Assignment?
 
     init(
         id: UUID = UUID(),
@@ -33,8 +33,8 @@ final class TodoTask {
         createdAt: Date = Date(),
         scheduledStart: Date? = nil,
         scheduledEnd: Date? = nil,
-        subject: Subject? = nil,
-        assessment: Assessment? = nil
+        course: Course? = nil,
+        assignment: Assignment? = nil
     ) {
         self.id = id
         self.title = title
@@ -45,8 +45,8 @@ final class TodoTask {
         self.createdAt = createdAt
         self.scheduledStart = scheduledStart
         self.scheduledEnd = scheduledEnd
-        self.subject = subject
-        self.assessment = assessment
+        self.course = course
+        self.assignment = assignment
     }
 
     var isScheduled: Bool {
