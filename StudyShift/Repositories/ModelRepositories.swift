@@ -8,35 +8,35 @@
 import Foundation
 import SwiftData
 
-struct SubjectRepository: RepositoryProtocol {
-    typealias Entity = Subject
+struct CourseRepository: RepositoryProtocol {
+    typealias Entity = Course
 
     let context: ModelContext
 
-    func fetchAll() throws -> [Subject] {
-        let descriptor = FetchDescriptor<Subject>(
+    func fetchAll() throws -> [Course] {
+        let descriptor = FetchDescriptor<Course>(
             sortBy: [SortDescriptor(\.name)]
         )
         return try fetch(with: descriptor)
     }
 
-    func fetchByCode(_ code: String) throws -> Subject? {
-        let descriptor = FetchDescriptor<Subject>(
-            predicate: #Predicate { subject in
-                subject.code == code
+    func fetchByCode(_ code: String) throws -> Course? {
+        let descriptor = FetchDescriptor<Course>(
+            predicate: #Predicate { course in
+                course.code == code
             }
         )
         return try fetch(with: descriptor).first
     }
 }
 
-struct AssessmentRepository: RepositoryProtocol {
-    typealias Entity = Assessment
+struct AssignmentRepository: RepositoryProtocol {
+    typealias Entity = Assignment
 
     let context: ModelContext
 
-    func fetchAll() throws -> [Assessment] {
-        let descriptor = FetchDescriptor<Assessment>(
+    func fetchAll() throws -> [Assignment] {
+        let descriptor = FetchDescriptor<Assignment>(
             sortBy: [SortDescriptor(\.dueDate)]
         )
         return try fetch(with: descriptor)

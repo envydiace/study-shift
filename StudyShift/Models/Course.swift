@@ -1,5 +1,5 @@
 //
-//  Subject.swift
+//  Course.swift
 //  StudyShift
 //
 //  Created by Đức Anh on 26/4/26.
@@ -9,20 +9,20 @@ import Foundation
 import SwiftData
 
 @Model
-final class Subject: UUIDIdentifiableModel {
+final class Course: UUIDIdentifiableModel {
     var id: UUID
     var name: String
     var code: String
     var colorHex: String
     var targetGrade: GradeTarget
 
-    @Relationship(deleteRule: .cascade, inverse: \ClassSession.subject)
+    @Relationship(deleteRule: .cascade, inverse: \ClassSession.course)
     var classSessions: [ClassSession] = []
 
-    @Relationship(deleteRule: .cascade, inverse: \Assessment.subject)
-    var assessments: [Assessment] = []
+    @Relationship(deleteRule: .cascade, inverse: \Assignment.course)
+    var assignments: [Assignment] = []
 
-    @Relationship(deleteRule: .cascade, inverse: \TodoTask.subject)
+    @Relationship(deleteRule: .cascade, inverse: \TodoTask.course)
     var tasks: [TodoTask] = []
 
     init(

@@ -11,11 +11,11 @@ import SwiftData
 struct AddAssignmentView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
-    @Query(sort: \Subject.name) private var subjects: [Subject]
+    @Query(sort: \Course.name) private var courses: [Course]
 
     @State private var title = ""
     @State private var dueDate = Date()
-    @State private var selectedSubjectID: UUID?
+    @State private var selectedCourseID: UUID?
     @State private var selectedTargetGrade: GradeTarget = .highDistinction
     @State private var weightText = ""
     @State private var wordLimitText = ""
@@ -43,15 +43,15 @@ struct AddAssignmentView: View {
                     }
 
                     fieldSection("Course") {
-                        if subjects.isEmpty {
-                            Text("Add a subject first to link this assignment to a course.")
+                        if courses.isEmpty {
+                            Text("Add a course first to link this assignment to a course.")
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                         } else {
-                            Picker("Course", selection: $selectedSubjectID) {
+                            Picker("Course", selection: $selectedCourseID) {
                                 Text("Select a course").tag(Optional<UUID>.none)
-                                ForEach(subjects) { subject in
-                                    Text(subject.name).tag(Optional(subject.id))
+                                ForEach(courses) { course in
+                                    Text(course.name).tag(Optional(course.id))
                                 }
                             }
                             .pickerStyle(.menu)
@@ -128,21 +128,21 @@ struct AddAssignmentView: View {
             Text(errorMessage)
         }
         .onAppear {
-            if let firstSubject = subjects.first {
-                selectedSubjectID = firstSubject.id
-                selectedTargetGrade = firstSubject.targetGrade
+            if let firstCourse = courses.first {
+                selectedCourseID = firstCourse.id
+                selectedTargetGrade = firstCourse.targetGrade
             }
         }
-        .onChange(of: selectedSubjectID) { _, newValue in
+        .onChange(of: selectedCourseID) { _, newValue in
             guard let newValue,
-                  let subject = subjects.first(where: { $0.id == newValue }) else { return }
-            selectedTargetGrade = subject.targetGrade
+                  let course = courses.first(where: { $0.id == newValue }) else { return }
+            selectedTargetGrade = course.targetGrade
         }
     }
 
-    private var selectedSubject: Subject? {
-        guard let selectedSubjectID else { return nil }
-        return subjects.first(where: { $0.id == selectedSubjectID })
+    private var selectedCourse: Course? {
+        guard let selectedCourseID else { return nil }
+        return courses.first(where: { $0.id == selectedCourseID })
     }
 
     private var header: some View {
@@ -205,14 +205,14 @@ struct AddAssignmentView: View {
         Word Limit: \(wordLimitText.isEmpty ? "-" : wordLimitText)
         """
 
-        let assignment = Assessment(
+        let assignment = Assignment(
             title: trimmedTitle,
-            assessmentType: .assignment,
+            assignmentType: .assignment,
             dueDate: dueDate,
             weight: weight,
             status: .notStarted,
             note: note,
-            subject: selectedSubject
+            course: selectedCourse
         )
 
         modelContext.insert(assignment)
@@ -221,8 +221,8 @@ struct AddAssignmentView: View {
             let task = TodoTask(
                 title: taskTitle,
                 dueDate: dueDate,
-                subject: selectedSubject,
-                assessment: assignment
+                course: selectedCourse,
+                assignment: assignment
             )
             modelContext.insert(task)
             assignment.tasks.append(task)

@@ -20,8 +20,8 @@ final class TodoTask: UUIDIdentifiableModel {
     var scheduledStart: Date?
     var scheduledEnd: Date?
 
-    var subject: Subject?
-    var assessment: Assessment?
+    var course: Course?
+    var assignment: Assignment?
 
     init(
         id: UUID = UUID(),
@@ -33,8 +33,8 @@ final class TodoTask: UUIDIdentifiableModel {
         createdAt: Date = Date(),
         scheduledStart: Date? = nil,
         scheduledEnd: Date? = nil,
-        subject: Subject? = nil,
-        assessment: Assessment? = nil
+        course: Course? = nil,
+        assignment: Assignment? = nil
     ) {
         self.id = id
         self.title = title
@@ -45,8 +45,8 @@ final class TodoTask: UUIDIdentifiableModel {
         self.createdAt = createdAt
         self.scheduledStart = scheduledStart
         self.scheduledEnd = scheduledEnd
-        self.subject = subject
-        self.assessment = assessment
+        self.course = course
+        self.assignment = assignment
     }
 
     var isScheduled: Bool {

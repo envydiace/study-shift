@@ -21,8 +21,8 @@ final class AddEventViewModel: ObservableObject {
     @Published var notes: String = ""
 
     // Class fields
-    @Published var subjects: [Subject] = []
-    @Published var subjectCode: String = ""
+    @Published var courses: [Course] = []
+    @Published var courseCode: String = ""
 
     // Work shift fields
     @Published var workplace: String = ""
@@ -36,7 +36,7 @@ final class AddEventViewModel: ObservableObject {
 
     let reminderOptions = [5, 10, 15, 30, 60, 120]
     
-    private var subjectRepository: SubjectRepository?
+    private var courseRepository: CourseRepository?
     private var classSessionReposiitory: ClassSessionRepository?
     private var personalEventRepository: PersonalEventRepository?
     private var workShiftRepository: WorkShiftRepository?
@@ -47,8 +47,8 @@ final class AddEventViewModel: ObservableObject {
     }
 
     func configure(context: ModelContext) {
-        if subjectRepository == nil {
-            subjectRepository = SubjectRepository(context: context)
+        if courseRepository == nil {
+            courseRepository = CourseRepository(context: context)
         }
         if classSessionReposiitory == nil {
             classSessionReposiitory = ClassSessionRepository(context: context)
@@ -77,15 +77,15 @@ final class AddEventViewModel: ObservableObject {
         }
     }
     
-    func loadSubjects() {
-        guard let subjectRepository
+    func loadCourses() {
+        guard let courseRepository
         else {
             errorMessage = "Repository is not ready."
             return
         }
 
         do {
-            subjects = try subjectRepository.fetchAll()
+            courses = try courseRepository.fetchAll()
             errorMessage = ""
         } catch {
             errorMessage = "Failed to load calendar events."
@@ -208,13 +208,13 @@ final class AddEventViewModel: ObservableObject {
     private func saveClassSession() throws {
         guard let startDate, let endDate else { return }
 
-        let subject = try subjectRepository?.fetchByCode(subjectCode)
+        let course = try courseRepository?.fetchByCode(courseCode)
         let classSession = ClassSession(
             title: trimmedTitle,
             location: emptyToNil(location),
             startTime: startDate,
             endTime: endDate,
-            subject: subject
+            course: course
         )
 
         try classSessionReposiitory?.insert(classSession)

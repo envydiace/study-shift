@@ -11,9 +11,9 @@ enum ModelContainerFactory {
 
     static let appSchema = Schema([
         StudentProfile.self,
-        Subject.self,
+        Course.self,
         ClassSession.self,
-        Assessment.self,
+        Assignment.self,
         TodoTask.self,
         WorkShift.self,
         PersonalEvent.self
@@ -59,21 +59,21 @@ enum ModelContainerFactory {
         let context = container.mainContext
 
         context.insert(
-            Subject(
+            Course(
                 name: "iOS Development",
                 code: "IOS101"
             )
         )
 
         context.insert(
-            Subject(
+            Course(
                 name: "Cloud Computing",
                 code: "CLOUD101"
             )
         )
 
         context.insert(
-            Subject(
+            Course(
                 name: "Cyber Security",
                 code: "CYB101"
             )

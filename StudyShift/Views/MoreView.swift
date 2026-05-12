@@ -11,7 +11,7 @@ struct MoreView: View {
     var body: some View {
         NavigationStack {
             List {
-                NavigationLink("Assessments") {
+                NavigationLink("Assignments") {
                     AssignmentsView()
                 }
 
@@ -23,8 +23,8 @@ struct MoreView: View {
                     TimetableImportView()
                 }
                 
-                NavigationLink("Subject List") {
-                    SubjectListView()
+                NavigationLink("Course List") {
+                    CourseListView()
                 }
                 
                 NavigationLink("Debug Data View") {

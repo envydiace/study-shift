@@ -59,7 +59,7 @@ struct AddEventView: View {
             }
             .task {
                 viewModel.configure(context: context)
-                viewModel.loadSubjects()
+                viewModel.loadCourses()
             }
         }
     }
@@ -207,19 +207,19 @@ struct AddEventView: View {
         sectionCard {
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
-                    Text("Subjects")
+                    Text("Course")
                         .font(.headline)
                     
                     Spacer()
                     
-                    Picker("Subject", selection: $viewModel.subjectCode) {
-                        Text("No subject")
+                    Picker("Course", selection: $viewModel.courseCode) {
+                        Text("No course")
                             .tag("")
 
-                        ForEach(viewModel.subjects) { subject in
+                        ForEach(viewModel.courses) { course in
                             Divider()
-                            Text("\(subject.code) - \(subject.name)")
-                                .tag(subject.code)
+                            Text("\(course.code) - \(course.name)")
+                                .tag(course.code)
                         }
                     }
                     .pickerStyle(.menu)

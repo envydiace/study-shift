@@ -1,5 +1,5 @@
 //
-//  SubjectFormViewModel.swift
+//  AddCourseViewModel.swift
 //  StudyShift
 //
 //  Created by Đức Anh on 26/4/26.
@@ -9,7 +9,7 @@ import Foundation
 import Combine
 import SwiftData
 
-final class SubjectFormViewModel: ObservableObject {
+final class AddCourseViewModel: ObservableObject {
     @Published var name: String = ""
     @Published var code: String = ""
     @Published var colorHex: String = "#4F46E5"
@@ -29,15 +29,15 @@ final class SubjectFormViewModel: ObservableObject {
         "#CA8A04"
     ]
 
-    private var repository: SubjectRepository?
+    private var repository: CourseRepository?
 
     func configure(context: ModelContext) {
         if repository == nil {
-            repository = SubjectRepository(context: context)
+            repository = CourseRepository(context: context)
         }
     }
 
-    func saveSubject() -> Bool {
+    func saveCourse() -> Bool {
         guard let repository else {
             showValidationError = true
             validationMessage = "Repository is not ready."
@@ -49,17 +49,17 @@ final class SubjectFormViewModel: ObservableObject {
 
         guard !trimmedName.isEmpty else {
             showValidationError = true
-            validationMessage = "Please enter subject name."
+            validationMessage = "Please enter course name."
             return false
         }
 
         guard !trimmedCode.isEmpty else {
             showValidationError = true
-            validationMessage = "Please enter subject code."
+            validationMessage = "Please enter course code."
             return false
         }
 
-        let subject = Subject(
+        let course = Course(
             name: trimmedName,
             code: trimmedCode,
             colorHex: colorHex,
@@ -67,13 +67,13 @@ final class SubjectFormViewModel: ObservableObject {
         )
 
         do {
-            try repository.insert(subject)
-            print("Subject saved successfully!")
+            try repository.insert(course)
+            print("Course saved successfully!")
             return true
         } catch {
             showValidationError = true
-            validationMessage = "Failed to save subject."
-            print("Failed to save subject: \(error)")
+            validationMessage = "Failed to save course."
+            print("Failed to save course: \(error)")
             return false
         }
     }

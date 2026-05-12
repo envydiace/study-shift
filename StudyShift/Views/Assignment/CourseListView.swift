@@ -8,7 +8,7 @@ import SwiftUI
 import SwiftData
 
 struct CourseListView: View {
-    @Query(sort: \Subject.name) private var subjects: [Subject]
+    @Query(sort: \Course.name) private var courses: [Course]
 
     var body: some View {
         ZStack {
@@ -19,11 +19,11 @@ struct CourseListView: View {
                 VStack(alignment: .leading, spacing: 18) {
                     header
 
-                    if subjects.isEmpty {
+                    if courses.isEmpty {
                         emptyState
                     } else {
-                        ForEach(subjects) { subject in
-                            CourseCardView(subject: subject)
+                        ForEach(courses) { course in
+                            CourseCardView(course: course)
                         }
                     }
                 }
@@ -61,7 +61,7 @@ struct CourseListView: View {
             Text("No courses yet")
                 .font(.headline)
 
-            Text("Import your timetable or add a subject to populate this list.")
+            Text("Import your timetable or add a course to populate this list.")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
         }
@@ -73,22 +73,22 @@ struct CourseListView: View {
 }
 
 private struct CourseCardView: View {
-    let subject: Subject
+    let course: Course
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("\(subject.code) \(subject.name)")
+            Text("\(course.code) \(course.name)")
                 .font(.headline)
 
             HStack {
-                Text("Target: \(subject.targetGrade.rawValue)")
+                Text("Target: \(course.targetGrade.rawValue)")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
 
                 Spacer()
 
                 Circle()
-                    .fill(Color(hex: subject.colorHex))
+                    .fill(Color(hex: course.colorHex))
                     .frame(width: 14, height: 14)
             }
         }
@@ -97,7 +97,7 @@ private struct CourseCardView: View {
         .background(Color.surfaceCard)
         .overlay(
             RoundedRectangle(cornerRadius: 18)
-                .stroke(Color(hex: subject.colorHex).opacity(0.45), lineWidth: 2)
+                .stroke(Color(hex: course.colorHex).opacity(0.45), lineWidth: 2)
         )
         .clipShape(RoundedRectangle(cornerRadius: 18))
     }
@@ -105,5 +105,6 @@ private struct CourseCardView: View {
 
 #Preview {
     CourseListView()
+        .modelContainer(ModelContainerFactory.createPreviewContainer())
 }
 

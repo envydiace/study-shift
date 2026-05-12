@@ -24,7 +24,7 @@ enum Weekday: String, Codable, CaseIterable {
     case sunday = "Sunday"
 }
 
-enum AssessmentType: String, Codable, CaseIterable {
+enum AssignmentType: String, Codable, CaseIterable {
     case assignment = "Assignment"
     case quiz = "Quiz"
     case exam = "Exam"
@@ -33,7 +33,7 @@ enum AssessmentType: String, Codable, CaseIterable {
     case other = "Other"
 }
 
-enum AssessmentStatus: String, Codable, CaseIterable {
+enum AssignmentStatus: String, Codable, CaseIterable {
     case notStarted = "Not Started"
     case inProgress = "In Progress"
     case submitted = "Submitted"

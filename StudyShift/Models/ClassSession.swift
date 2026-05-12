@@ -19,7 +19,7 @@ final class ClassSession: UUIDIdentifiableModel {
     var externalEventId: String?
     var sourceURL: String?
 
-    var subject: Subject?
+    var course: Course?
 
     init(
         id: UUID = UUID(),
@@ -29,7 +29,7 @@ final class ClassSession: UUIDIdentifiableModel {
         endTime: Date,
         externalEventId: String? = nil,
         sourceURL: String? = nil,
-        subject: Subject? = nil
+        course: Course? = nil
     ) {
         self.id = id
         self.title = title
@@ -38,6 +38,6 @@ final class ClassSession: UUIDIdentifiableModel {
         self.endTime = endTime
         self.externalEventId = externalEventId
         self.sourceURL = sourceURL
-        self.subject = subject
+        self.course = course
     }
 }

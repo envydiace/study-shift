@@ -1,5 +1,5 @@
 //
-//  SubjectListViewModel.swift
+//  CourseListViewModel.swift
 //  StudyShift
 //
 //  Created by Đức Anh on 26/4/26.
@@ -10,62 +10,62 @@ import Combine
 import SwiftData
 
 final class SubjectListViewModel: ObservableObject {
-    @Published var showAddSubjectForm: Bool = false
+    @Published var showAddCourseForm: Bool = false
     @Published var showImportTimetableView = false
-    @Published var subjects: [Subject] = []
+    @Published var courses: [Course] = []
     @Published var errorMessage: String = ""
 
-    private var repository: SubjectRepository?
+    private var repository: CourseRepository?
 
     func configure(context: ModelContext) {
         if repository == nil {
-            repository = SubjectRepository(context: context)
+            repository = CourseRepository(context: context)
         }
     }
 
-    func loadSubjects() {
+    func loadCourses() {
         guard let repository else {
             errorMessage = "Repository is not ready."
             return
         }
 
         do {
-            subjects = try repository.fetchAll()
+            courses = try repository.fetchAll()
             errorMessage = ""
         } catch {
-            errorMessage = "Failed to load subjects."
-            print("Failed to load subjects: \(error)")
+            errorMessage = "Failed to load courses."
+            print("Failed to load courses: \(error)")
         }
     }
 
-    func deleteSubject(_ subject: Subject) {
+    func deleteCourse(_ course: Course) {
         guard let repository else {
             errorMessage = "Repository is not ready."
             return
         }
 
         do {
-            try repository.delete(subject)
-            subjects.removeAll { $0.id == subject.id }
+            try repository.delete(course)
+            courses.removeAll { $0.id == course.id }
             errorMessage = ""
-            print("Subject deleted successfully!")
+            print("Course deleted successfully!")
         } catch {
-            errorMessage = "Failed to delete subject."
-            print("Failed to delete subject: \(error)")
+            errorMessage = "Failed to delete course."
+            print("Failed to delete course: \(error)")
         }
     }
 
-    func printSubject(_ subject: Subject) {
+    func printCourse(_ course: Course) {
         print("""
-        ===== SUBJECT =====
-        ID: \(subject.id)
-        Name: \(subject.name)
-        Code: \(subject.code)
-        Color: \(subject.colorHex)
-        Target Grade: \(subject.targetGrade.rawValue)
-        Class Sessions: \(subject.classSessions.count)
-        Assessments: \(subject.assessments.count)
-        Tasks: \(subject.tasks.count)
+        ===== COURSE =====
+        ID: \(course.id)
+        Name: \(course.name)
+        Code: \(course.code)
+        Color: \(course.colorHex)
+        Target Grade: \(course.targetGrade.rawValue)
+        Class Sessions: \(course.classSessions.count)
+        Assignments: \(course.assignments.count)
+        Tasks: \(course.tasks.count)
         ===================
         """)
     }
