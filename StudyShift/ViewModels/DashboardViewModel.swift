@@ -76,7 +76,7 @@ final class DashboardViewModel: ObservableObject {
                     title: classSession.title,
                     startTime: DateFormatHelper.formatHourMinute(classSession.startTime),
                     endTime: DateFormatHelper.formatHourMinute(classSession.endTime),
-                    dayText: DateFormatHelper.formatHourMinute(classSession.startTime),
+                    dayText: DateFormatHelper.formatDay(classSession.startTime),
                     location: classSession.location
                 )
             }
