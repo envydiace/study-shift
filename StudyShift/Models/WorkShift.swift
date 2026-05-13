@@ -24,7 +24,7 @@ final class WorkShift: UUIDIdentifiableModel {
         workplace: String = "",
         startTime: Date,
         endTime: Date,
-        colorHex: String = "#4CAF50",
+        colorHex: String = EventColorOption.defaultColor.hex,
         note: String = ""
     ) {
         self.id = id
