@@ -10,6 +10,8 @@ import SwiftUI
 struct DashboardView: View {
     @Environment(\.modelContext) private var modelContext
     @StateObject private var viewModel = DashboardViewModel()
+    
+    @Binding var selectedTab: MainTab
 
     private let screenBackground = Color.tealMain
 
@@ -48,6 +50,7 @@ struct DashboardView: View {
         .background(screenBackground.ignoresSafeArea())
         .task {
             viewModel.configure(context: modelContext)
+            viewModel.loadShiftSummary()
             viewModel.loadUpcomingClasses()
         }
     }
@@ -98,7 +101,7 @@ struct DashboardView: View {
                     .foregroundColor(.black.opacity(0.65))
 
                 Button {
-                    print("View Shift Log tapped")
+                    selectedTab = .work
                 } label: {
                     Text("View Shift Log")
                         .font(.system(size: 15, weight: .semibold))
@@ -175,5 +178,5 @@ struct DashboardView: View {
 }
 
 #Preview {
-    DashboardView()
+    DashboardView(selectedTab: .constant(.home))
 }

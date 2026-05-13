@@ -7,6 +7,14 @@
 
 import Foundation
 
+enum MainTab {
+    case home
+    case calendar
+    case tasks
+    case work
+    case more
+}
+
 enum GradeTarget: String, Codable, CaseIterable {
     case pass = "P"
     case credit = "C"

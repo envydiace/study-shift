@@ -114,6 +114,22 @@ struct WorkShiftRepository: RepositoryProtocol {
         )
         return try fetch(with: descriptor)
     }
+    
+    func fetchShifts(
+            from startDate: Date,
+            to endDate: Date
+        ) throws -> [WorkShift] {
+            let descriptor = FetchDescriptor<WorkShift>(
+                predicate: #Predicate { shift in
+                    shift.startTime >= startDate && shift.startTime < endDate
+                },
+                sortBy: [
+                    SortDescriptor(\.startTime, order: .forward)
+                ]
+            )
+
+            return try fetch(with: descriptor)
+        }
 }
 
 struct PersonalEventRepository: RepositoryProtocol {
