@@ -6,9 +6,12 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct AssignmentsView: View {
-    
+    @Query(sort: \Assignment.dueDate)
+    private var assignments: [Assignment]
+
     @State var isShowAddAssignment: Bool = false
     
     var body: some View {
@@ -16,178 +19,67 @@ struct AssignmentsView: View {
             Color.tealMain
                 .ignoresSafeArea()
 
-            VStack(spacing: 0) {
-                mainContent
-                    .padding(.vertical, 4)
-//                        bottomTabBar
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(.tealMain)
-            .clipShape(RoundedRectangle(cornerRadius: 30))
-        }
-        .sheet(isPresented: $isShowAddAssignment) {
-            AddAssignmentView ()
-        }
-    }
-    
-    var mainContent: some View {
-        
-        VStack(alignment: .leading, spacing: 20) {
-    //        header
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 20) {
+                    header
 
-            assignmentCard(
-                course: "42904 Cloud Computing",
-                target: "HD",
-                title: "Assignment 2",
-                progress: 0.65,
-                status: "Urgent",
-                statusColor: .redMain,
-                due: "Due Tomorrow"
-            )
+                    if assignments.isEmpty {
+                        emptyState
+                    } else {
+                        ForEach(assignments) { assignment in
+                            AssignmentCardView(assignment: assignment)
+                        }
+                    }
 
-            assignmentCard(
-                course: "32541 Project Management",
-                target: "D",
-                title: "Assignment 1",
-                progress: 0.42,
-                status: "Soon",
-                statusColor: .yellowMain,
-                due: "Due in 3 days"
-            )
+                    VStack(spacing: 14) {
+                        Button {
+                            showAddAssignment()
+                        } label: {
+                            Text("+ Add Assignment")
+                        }
+                        .buttonStyle(PillButtonStyle())
 
-            Spacer()
-
-            VStack(spacing: 14) {
-                Button("+ Add Assignment") {
-                    showAddAssignment()
+                        NavigationLink {
+                            CourseListView()
+                        } label: {
+                            Text("View Course List")
+                        }
+                        .buttonStyle(PillButtonStyle())
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, 16)
                 }
-                .buttonStyle(PillButtonStyle())
-
-                Button("View Course List") {}
-                    .buttonStyle(PillButtonStyle())
+                .padding(.horizontal, 24)
+                .padding(.top, 55)
+                .padding(.bottom, 40)
             }
-            .frame(maxWidth: .infinity)
-
-            Spacer()
         }
-        .padding(.horizontal, 24)
-        .padding(.top, 55)
+        .toolbar(.hidden, for: .navigationBar)
+        .sheet(isPresented: $isShowAddAssignment) {
+            AddAssignmentView()
+        }
     }
 
-    var header: some View {
+    private var header: some View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Assignments")
-                    .navigationTitle("Assignments")
-                    .font(.headline.bold())
+                    .font(.title2.bold())
+                    .foregroundStyle(.black)
 
-                //can change to what semester student's at
-                Text("Semester 3 | 2026")
-                    .font(.caption)
+//                Text("Semester 3 | 2026")
+//                    .font(.caption)
             }
 
             Spacer()
 
-            Image(systemName: "bell")
-                .padding(6)
-                .background(.white)
-                .clipShape(Circle())
+//            Image(systemName: "bell")
+//                .padding(6)
+//                .background(.white)
+//                .clipShape(Circle())
         }
         .foregroundStyle(.black)
         .padding(.bottom, 12)
-    }
-
-    func assignmentCard(
-        course: String,
-        target: String,
-        title: String,
-        progress: Double,
-        status: String,
-        statusColor: Color,
-        due: String
-    ) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Image(systemName: "book.closed.fill")
-                    .padding(8)
-                    .background(.tealMain)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(course)
-                        .font(.caption.bold())
-
-                    Text("Target: \(target)")
-                        .font(.caption2)
-                        .foregroundStyle(.gray)
-                }
-
-                Spacer()
-
-                Text(target)
-                    .font(.caption.bold())
-                    .padding(.horizontal, 18)
-                    .padding(.vertical, 8)
-                    .background(.tealMain)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-            }
-
-            HStack(alignment: .bottom) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(title)
-                        .font(.caption.bold())
-
-                    ProgressView(value: progress)
-                        .tint(.purpleMain)
-
-                    Text("Need 70% more")
-                        .font(.caption2)
-                        .foregroundStyle(.gray)
-                }
-
-                Spacer()
-
-                VStack(spacing: 4) {
-                    Text(status)
-                        .font(.caption2.bold())
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 6)
-                        .background(statusColor)
-                        .clipShape(Capsule())
-
-                    Text(due)
-                        .font(.caption2)
-                        .foregroundStyle(.gray)
-                }
-            }
-        }
-        .padding(12)
-        .background(Color(red: 0.88, green: 0.94, blue: 0.98))
-        .clipShape(RoundedRectangle(cornerRadius: 14))
-    }
-
-    var bottomTabBar: some View {
-        HStack(spacing: 40) {
-            Image(systemName: "house")
-            Image(systemName: "calendar")
-            Image(systemName: "doc.text.fill")
-                .padding(14)
-                .background(.tealMain)
-                .clipShape(Circle())
-            Image(systemName: "briefcase.fill")
-            Image(systemName: "person")
-        }
-        .font(.title3)
-        .padding(.top, 16)
-        .padding(.bottom, 24)
-        .frame(maxWidth: .infinity)
-        .background(Color(red: 0.86, green: 0.98, blue: 0.88))
-        .clipShape(
-            UnevenRoundedRectangle(
-                topLeadingRadius: 32,
-                topTrailingRadius: 32
-            )
-        )
     }
     
     private func showAddAssignment() {
@@ -197,24 +89,37 @@ struct AssignmentsView: View {
     private func hideAddAssignment() {
         isShowAddAssignment = false;
     }
+
+    private var emptyState: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("No assignments yet")
+                .font(.headline)
+
+            Text("Add an assignment to start tracking your assessments.")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+        }
+        .padding(20)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.surfaceCard)
+        .clipShape(RoundedRectangle(cornerRadius: 18))
+    }
 }
-
-
-
-
 struct PillButtonStyle: ButtonStyle {
-func makeBody(configuration: Configuration) -> some View {
-    configuration.label
-        .font(.headline.bold())
-        .foregroundStyle(.tealMain)
-        .padding(.horizontal, 24)
-        .padding(.vertical, 12)
-        .background(.tealDark)
-        .clipShape(Capsule())
-        .scaleEffect(configuration.isPressed ? 0.96 : 1)
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.headline.bold())
+            .foregroundStyle(.tealMain)
+            .padding(.horizontal, 24)
+            .padding(.vertical, 14)
+            .background(.tealDark)
+            .clipShape(Capsule())
+            .scaleEffect(configuration.isPressed ? 0.97 : 1)
+    }
 }
-}
+
 
 #Preview {
     AssignmentsView()
+        .modelContainer(ModelContainerFactory.createPreviewContainer())
 }

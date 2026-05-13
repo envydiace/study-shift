@@ -33,11 +33,13 @@ enum Weekday: String, Codable, CaseIterable {
 }
 
 enum AssignmentType: String, Codable, CaseIterable {
-    case assignment = "Assignment"
-    case quiz = "Quiz"
-    case exam = "Exam"
+    case essay = "Essay"
+    case quiz = "Quiz/test"
     case presentation = "Presentation"
     case project = "Project"
+    case report = "Report"
+    case exam = "Examination"
+    case lab = "Laboratory/practical"
     case other = "Other"
 }
 

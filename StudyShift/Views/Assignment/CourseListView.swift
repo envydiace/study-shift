@@ -15,24 +15,44 @@ struct CourseListView: View {
             Color.tealMain
                 .ignoresSafeArea()
 
-            ScrollView(showsIndicators: false) {
+            ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
                     header
 
                     if courses.isEmpty {
-                        emptyState
+                        Text("No courses yet")
+                            .font(.headline)
+                            .padding()
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(Color.surfaceCard)
+                            .clipShape(RoundedRectangle(cornerRadius: 16))
                     } else {
                         ForEach(courses) { course in
-                            CourseCardView(course: course)
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("\(course.code) \(course.name)")
+                                    .font(.headline)
+
+                                Text("Target: \(course.targetGrade.rawValue)")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                            }
+                            .padding(18)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(Color.surfaceCard)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 18)
+                                    .stroke(Color(hex: course.colorHex).opacity(0.45), lineWidth: 2)
+                            )
+                            .clipShape(RoundedRectangle(cornerRadius: 18))
                         }
                     }
                 }
                 .padding(.horizontal, 24)
-                .padding(.top, 55)
+                .padding(.top, 24)
                 .padding(.bottom, 40)
             }
         }
-        .toolbar(.hidden, for: .navigationBar)
+        .navigationBarTitleDisplayMode(.inline)
     }
 
     private var header: some View {
@@ -48,60 +68,14 @@ struct CourseListView: View {
             Spacer()
 
             Image(systemName: "bell")
-                .foregroundStyle(.black)
                 .padding(8)
-                .background(Color.white)
+                .background(.white)
                 .clipShape(Circle())
         }
         .foregroundStyle(.black)
     }
-
-    private var emptyState: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("No courses yet")
-                .font(.headline)
-
-            Text("Import your timetable or add a course to populate this list.")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-        }
-        .padding(20)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.surfaceCard)
-        .clipShape(RoundedRectangle(cornerRadius: 18))
-    }
 }
 
-private struct CourseCardView: View {
-    let course: Course
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("\(course.code) \(course.name)")
-                .font(.headline)
-
-            HStack {
-                Text("Target: \(course.targetGrade.rawValue)")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-
-                Spacer()
-
-                Circle()
-                    .fill(Color(hex: course.colorHex))
-                    .frame(width: 14, height: 14)
-            }
-        }
-        .padding(18)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.surfaceCard)
-        .overlay(
-            RoundedRectangle(cornerRadius: 18)
-                .stroke(Color(hex: course.colorHex).opacity(0.45), lineWidth: 2)
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 18))
-    }
-}
 
 #Preview {
     CourseListView()
