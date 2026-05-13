@@ -15,48 +15,51 @@ struct AssignmentsView: View {
     @State var isShowAddAssignment: Bool = false
     
     var body: some View {
-        ZStack {
-            Color.tealMain
-                .ignoresSafeArea()
-
-            ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 20) {
-                    header
-
-                    if assignments.isEmpty {
-                        emptyState
-                    } else {
-                        ForEach(assignments) { assignment in
-                            AssignmentCardView(assignment: assignment)
+        NavigationStack {
+            
+            ZStack {
+                Color.tealMain
+                    .ignoresSafeArea()
+                
+                ScrollView(showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: 20) {
+                        header
+                        
+                        if assignments.isEmpty {
+                            emptyState
+                        } else {
+                            ForEach(assignments) { assignment in
+                                AssignmentCardView(assignment: assignment)
+                            }
                         }
+                        
+                        VStack(spacing: 14) {
+                            Button {
+                                showAddAssignment()
+                            } label: {
+                                Text("+ Add Assignment")
+                            }
+                            .buttonStyle(PillButtonStyle())
+                            
+                            NavigationLink {
+                                CourseListView()
+                            } label: {
+                                Text("View Course List")
+                            }
+                            .buttonStyle(PillButtonStyle())
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 16)
                     }
-
-                    VStack(spacing: 14) {
-                        Button {
-                            showAddAssignment()
-                        } label: {
-                            Text("+ Add Assignment")
-                        }
-                        .buttonStyle(PillButtonStyle())
-
-                        NavigationLink {
-                            CourseListView()
-                        } label: {
-                            Text("View Course List")
-                        }
-                        .buttonStyle(PillButtonStyle())
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.top, 16)
+                    .padding(.horizontal, 24)
+                    .padding(.top, 55)
+                    .padding(.bottom, 40)
                 }
-                .padding(.horizontal, 24)
-                .padding(.top, 55)
-                .padding(.bottom, 40)
             }
-        }
-        .toolbar(.hidden, for: .navigationBar)
-        .sheet(isPresented: $isShowAddAssignment) {
-            AddAssignmentView()
+            .toolbar(.hidden, for: .navigationBar)
+            .sheet(isPresented: $isShowAddAssignment) {
+                AddAssignmentView()
+            }
         }
     }
 
