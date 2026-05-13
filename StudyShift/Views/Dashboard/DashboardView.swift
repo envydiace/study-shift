@@ -10,7 +10,7 @@ import SwiftUI
 struct DashboardView: View {
     @Environment(\.modelContext) private var modelContext
     @StateObject private var viewModel = DashboardViewModel()
-    
+
     @Binding var selectedTab: MainTab
 
     private let screenBackground = Color.tealMain
@@ -19,28 +19,12 @@ struct DashboardView: View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 18) {
                 headerSection
-
                 shiftSummaryCard
-
-                sectionHeader(
-                    title: "Assessments In Progress",
-                    count: viewModel.assessments.count
-                )
-
+                sectionHeader(title: "Assessments In Progress", count: viewModel.assessments.count)
                 assessmentSection
-
-                sectionHeader(
-                    title: "Upcoming Classes",
-                    count: viewModel.upcomingClasses.count
-                )
-
+                sectionHeader(title: "Upcoming Classes", count: viewModel.upcomingClasses.count)
                 classesSection
-
-                sectionHeader(
-                    title: "Upcoming Deadlines",
-                    count: viewModel.upcomingDeadlines.count
-                )
-
+                sectionHeader(title: "Upcoming Deadlines", count: viewModel.upcomingDeadlines.count)
                 deadlinesSection
             }
             .padding(.horizontal, 16)
@@ -54,7 +38,9 @@ struct DashboardView: View {
             viewModel.loadUpcomingClasses()
         }
     }
-    
+
+    // MARK: - Header
+
     var headerSection: some View {
         HStack(alignment: .top) {
             VStack(alignment: .leading, spacing: 2) {
@@ -65,70 +51,85 @@ struct DashboardView: View {
                     .font(.system(size: 15, weight: .medium))
                     .foregroundColor(.black.opacity(0.75))
             }
-
-//            Spacer()
-
-//            Button {
-//                print("Notification tapped")
-//            } label: {
-//                ZStack {
-//                    Circle()
-//                        .fill(Color.white.opacity(0.9))
-//                        .frame(width: 34, height: 34)
-//
-//                    Image(systemName: "bell")
-//                        .font(.system(size: 16, weight: .medium))
-//                        .foregroundColor(.black.opacity(0.8))
-//                }
-//            }
         }
     }
+
+    // MARK: - Shift Summary Card
 
     var shiftSummaryCard: some View {
-        HStack(spacing: 10) {
-            VStack(alignment: .leading, spacing: 14) {
-                HStack(spacing: 6) {
-                    Image(systemName: "triangle.fill")
-                        .font(.system(size: 12))
-                        .foregroundColor(.yellow)
+        VStack(spacing: 8) {
+            HStack(alignment: .center, spacing: 16) {
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(spacing: 6) {
+                        if viewModel.isLowHours {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundStyle(.yellow)
+                        }
+                        Text(viewModel.remainingHoursText)
+                            .font(.subheadline.bold())
+                            .foregroundStyle(.black)
+                            .lineLimit(1)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
 
-                    Text(viewModel.remainingHoursText)
-                        .font(.system(size: 20, weight: .semibold))
+                    Text(viewModel.remainingHoursSubtitle)
+                        .font(.caption)
+                        .foregroundStyle(.black.opacity(0.6))
+
+                    Button {
+                        selectedTab = .work
+                    } label: {
+                        Text("View Shift Log")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(.black)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(Capsule().fill(Color.tealMain))
+                    }
                 }
 
-                Text(viewModel.remainingHoursSubtitle)
-                    .font(.system(size: 15))
-                    .foregroundColor(.black.opacity(0.65))
+                Spacer()
+
+                ZStack {
+                    Circle()
+                        .stroke(Color.black.opacity(0.1), lineWidth: 8)
+                        .frame(width: 64, height: 64)
+
+                    Circle()
+                        .trim(from: 0, to: CGFloat(min(viewModel.workedProgress, 1)))
+                        .stroke(
+                            viewModel.isLowHours ? Color.red : Color.tealDark,
+                            style: StrokeStyle(lineWidth: 8, lineCap: .round)
+                        )
+                        .rotationEffect(.degrees(-90))
+                        .frame(width: 64, height: 64)
+
+                    VStack(spacing: 0) {
+                        Text(viewModel.workedHoursLabel)
+                            .font(.caption.bold())
+                            .foregroundStyle(.black)
+                        if let minutesLabel = viewModel.workedMinutesLabel {
+                            Text(minutesLabel)
+                                .font(.system(size: 9, weight: .bold))
+                                .foregroundStyle(.black)
+                        }
+                    }
+                }
 
                 Button {
-                    selectedTab = .work
+                    // ellipsis menu placeholder
                 } label: {
-                    Text("View Shift Log")
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundColor(.black)
-                        .padding(.horizontal, 18)
-                        .padding(.vertical, 10)
-                        .background(
-                            Capsule()
-                                .fill(Color(red: 0.16, green: 0.90, blue: 0.64))
-                        )
+                    Image(systemName: "ellipsis")
+                        .foregroundStyle(.black.opacity(0.5))
                 }
             }
-
-//            Spacer(minLength: 5)
-
-            CircularHoursProgressView(
-                progress: viewModel.workedProgress,
-                centerText: viewModel.workedHoursText
-            )
-            .padding(.trailing, 8)
+            .padding(16)
+            .background(Color.surfaceCard)
+            .clipShape(RoundedRectangle(cornerRadius: 16))
         }
-        .padding(18)
-        .background(
-            RoundedRectangle(cornerRadius: 26)
-                .fill(Color.white)
-        )
     }
+
+    // MARK: - Assessments
 
     var assessmentSection: some View {
         ScrollView(.horizontal, showsIndicators: false) {
@@ -141,6 +142,8 @@ struct DashboardView: View {
         }
     }
 
+    // MARK: - Classes
+
     var classesSection: some View {
         VStack(spacing: 12) {
             ForEach(viewModel.upcomingClasses) { item in
@@ -149,6 +152,8 @@ struct DashboardView: View {
         }
     }
 
+    // MARK: - Deadlines
+
     var deadlinesSection: some View {
         VStack(spacing: 12) {
             ForEach(viewModel.upcomingDeadlines) { item in
@@ -156,6 +161,8 @@ struct DashboardView: View {
             }
         }
     }
+
+    // MARK: - Section Header
 
     func sectionHeader(title: String, count: Int) -> some View {
         HStack(spacing: 6) {
@@ -168,13 +175,9 @@ struct DashboardView: View {
                 .foregroundColor(.purple)
                 .padding(.horizontal, 6)
                 .padding(.vertical, 2)
-                .background(
-                    Capsule()
-                        .fill(Color.white.opacity(0.8))
-                )
+                .background(Capsule().fill(Color.white.opacity(0.8)))
         }
     }
-    
 }
 
 #Preview {
