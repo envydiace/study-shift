@@ -224,7 +224,9 @@ struct AddAssignmentView: View {
         }
 
         do {
+            print("Starting Save")
             try modelContext.save()
+            print("Saving...")
             dismiss()
         } catch {
             alertMessage = "Failed to save assignment."
