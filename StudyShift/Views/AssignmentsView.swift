@@ -1,5 +1,5 @@
 //
-//  AssessmentsView.swift
+//  AssignmentsView.swift
 //  StudyShift
 //
 //  Created by Đức Anh on 30/4/26.
@@ -12,6 +12,8 @@ struct AssignmentsView: View {
     @Query(sort: \Assessment.dueDate)
     private var assignments: [Assessment]
 
+    @State var isShowAddAssignment: Bool = false
+    
     var body: some View {
         ZStack {
             Color.tealMain
@@ -74,6 +76,14 @@ struct AssignmentsView: View {
         }
         .foregroundStyle(.black)
         .padding(.bottom, 12)
+    }
+    
+    private func showAddAssignment() {
+        isShowAddAssignment = true;
+    }
+    
+    private func hideAddAssignment() {
+        isShowAddAssignment = false;
     }
 
     private var emptyState: some View {

@@ -45,6 +45,9 @@ struct CalendarView: View {
                 },
                 onTitleTap: {
                     viewModel.showMonthPicker()
+                },
+                onAddEvent: {
+                    viewModel.showAddEventScreen()
                 }
             )
 
@@ -54,7 +57,10 @@ struct CalendarView: View {
 
             WeekCalendarView(
                 events: $viewModel.events,
-                weekStartDate: viewModel.weekStartDate
+                weekStartDate: viewModel.weekStartDate,
+                onEventTap: { event in
+                    viewModel.showEventDetail(event)
+                }
             )
             .gesture(
                 DragGesture()
@@ -80,6 +86,7 @@ struct CalendarView: View {
                     }
             )
         }
+        .background(Color.tealMain)
         .sheet(isPresented: $viewModel.isShowingMonthPicker) {
             MonthPickerView(
                 selectedDate: viewModel.selectedDate
@@ -89,6 +96,21 @@ struct CalendarView: View {
                 }
             }
             .presentationDetents([.medium])
+        }
+        .sheet(isPresented: $viewModel.isShowingAddEventScreen) {
+            AddEventView {
+                viewModel.loadEvents()
+            }
+        }
+        .sheet(isPresented: $viewModel.isShowingEventDetail) {
+            if let event = viewModel.selectedEvent {
+                EventDetailView(
+                    event: event,
+                    onDelete: {
+                        viewModel.deleteSelectedEvent()
+                    }
+                )
+            }
         }
         .task {
             viewModel.configure(context: context)
@@ -116,76 +138,6 @@ struct CalendarView: View {
 }
 
 #Preview {
-    let events: [CalendarEvent] = [
-        CalendarEvent(
-            title: "Study SwiftUI 26",
-            start: previewDate(year: 2026, month: 4, day: 26, hour: 0, minute: 0),
-            end: previewDate(year: 2026, month: 4, day: 26, hour: 12, minute: 0),
-            color: Color.red
-        ),
-        CalendarEvent(
-            title: "Study SwiftUI 27",
-            start: previewDate(year: 2026, month: 4, day: 27, hour: 0, minute: 0),
-            end: previewDate(year: 2026, month: 4, day: 27, hour: 12, minute: 0),
-            color: Color.red
-        ),
-        CalendarEvent(
-            title: "Study SwiftUI 28",
-            start: previewDate(year: 2026, month: 4, day: 28, hour: 10, minute: 0),
-            end: previewDate(year: 2026, month: 4, day: 28, hour: 12, minute: 0),
-            color: Color.blue
-        ),
-        CalendarEvent(
-            title: "Study SwiftUI 29",
-            start: previewDate(year: 2026, month: 4, day: 29, hour: 10, minute: 0),
-            end: previewDate(year: 2026, month: 4, day: 29, hour: 12, minute: 0),
-            color: Color.blue
-        ),
-        CalendarEvent(
-            title: "Study SwiftUI 30",
-            start: previewDate(year: 2026, month: 4, day: 30, hour: 8, minute: 0),
-            end: previewDate(year: 2026, month: 4, day: 30, hour: 9, minute: 0),
-            color: Color.green
-        ),
-        CalendarEvent(
-            title: "Study SwiftUI 01",
-            start: previewDate(year: 2026, month: 5, day: 1, hour: 10, minute: 0),
-            end: previewDate(year: 2026, month: 5, day: 1, hour: 11, minute: 0),
-            color: Color.green
-        ),
-        CalendarEvent(
-            title: "Study SwiftUI 2",
-            start: previewDate(year: 2026, month: 5, day: 2, hour: 8, minute: 0),
-            end: previewDate(year: 2026, month: 5, day: 2, hour: 9, minute: 0),
-            color: Color.green
-        ),
-        CalendarEvent(
-            title: "Study SwiftUI 3",
-            start: previewDate(year: 2026, month: 5, day: 3, hour: 8, minute: 0),
-            end: previewDate(year: 2026, month: 5, day: 3, hour: 9, minute: 0),
-            color: Color.green
-        )
-    ]
-
-    CalendarView(
-        selectedDate: previewDate(year: 2026, month: 4, day: 30, hour: 0, minute: 0),
-        events: events
-    )
-}
-
-private func previewDate(
-    year: Int,
-    month: Int,
-    day: Int,
-    hour: Int,
-    minute: Int
-) -> Date {
-    var components = DateComponents()
-    components.year = year
-    components.month = month
-    components.day = day
-    components.hour = hour
-    components.minute = minute
-
-    return Calendar.current.date(from: components)!
+    CalendarView()
+        .modelContainer(ModelContainerFactory.createPreviewContainer())
 }

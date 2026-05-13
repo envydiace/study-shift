@@ -11,8 +11,8 @@ import SwiftData
 struct DebugDataView: View {
     @Environment(\.modelContext) private var context
 
-    @State private var subjects: [Subject] = []
-    @State private var assessments: [Assessment] = []
+    @State private var courses: [Course] = []
+    @State private var assessments: [Assignment] = []
     @State private var tasks: [TodoTask] = []
     @State private var shifts: [WorkShift] = []
     @State private var sessions: [ClassSession] = []
@@ -21,16 +21,16 @@ struct DebugDataView: View {
     var body: some View {
         NavigationStack {
             List {
-                Section("Subjects") {
-                    ForEach(subjects) { subject in
+                Section("Courses") {
+                    ForEach(courses) { course in
                         Button {
-                            printSubjectsCSV()
+                            printCoursesCSV()
                         } label: {
                             VStack(alignment: .leading) {
-                                Text(subject.name)
+                                Text(course.name)
                                     .font(.headline)
 
-                                Text(subject.code)
+                                Text(course.code)
                                     .font(.subheadline)
                                     .foregroundStyle(.secondary)
                             }
@@ -156,8 +156,8 @@ struct DebugDataView: View {
 
     private func loadData() {
         do {
-            subjects = try SubjectRepository(context: context).fetchAll()
-            assessments = try AssessmentRepository(context: context).fetchAll()
+            courses = try CourseRepository(context: context).fetchAll()
+            assessments = try AssignmentRepository(context: context).fetchAll()
             tasks = try TodoTaskRepository(context: context).fetchAll()
             shifts = try WorkShiftRepository(context: context).fetchAll()
             sessions = try ClassSessionRepository(context: context).fetchAll()
@@ -171,7 +171,7 @@ struct DebugDataView: View {
     // MARK: - Print All
 
     private func printAllCSV() {
-        printSubjectsCSV()
+        printCoursesCSV()
         printClassSessionsCSV()
         printAssessmentsCSV()
         printTasksCSV()
@@ -180,9 +180,9 @@ struct DebugDataView: View {
 
     // MARK: - CSV Print Functions
 
-    private func printSubjectsCSV() {
+    private func printCoursesCSV() {
         printCSV(
-            title: "SUBJECTS",
+            title: "COURSES",
             headers: [
                 "id",
                 "name",
@@ -193,16 +193,16 @@ struct DebugDataView: View {
                 "assessmentCount",
                 "taskCount"
             ],
-            rows: subjects.map { subject in
+            rows: courses.map { course in
                 [
-                    subject.id.uuidString,
-                    subject.name,
-                    subject.code,
-                    subject.colorHex,
-                    subject.targetGrade.rawValue,
-                    "\(subject.classSessions.count)",
-                    "\(subject.assessments.count)",
-                    "\(subject.tasks.count)"
+                    course.id.uuidString,
+                    course.name,
+                    course.code,
+                    course.colorHex,
+                    course.targetGrade.rawValue,
+                    "\(course.classSessions.count)",
+                    "\(course.assignments.count)",
+                    "\(course.tasks.count)"
                 ]
             }
         )
@@ -222,15 +222,15 @@ struct DebugDataView: View {
                 "weightedScore",
                 "status",
                 "note",
-                "subjectId",
-                "subjectName",
+                "courseId",
+                "courseName",
                 "taskCount"
             ],
             rows: assessments.map { assessment in
                 [
                     assessment.id.uuidString,
                     assessment.title,
-                    assessment.assessmentType.rawValue,
+                    assessment.assignmentType.rawValue,
                     formatDate(assessment.dueDate),
                     formatDouble(assessment.weight),
                     formatDouble(assessment.maxScore),
@@ -238,8 +238,8 @@ struct DebugDataView: View {
                     formatDouble(assessment.weightedScore),
                     assessment.status.rawValue,
                     assessment.note,
-                    assessment.subject?.id.uuidString ?? "",
-                    assessment.subject?.name ?? "",
+                    assessment.course?.id.uuidString ?? "",
+                    assessment.course?.name ?? "",
                     "\(assessment.tasks.count)"
                 ]
             }
@@ -260,8 +260,8 @@ struct DebugDataView: View {
                 "scheduledStart",
                 "scheduledEnd",
                 "scheduledDurationHours",
-                "subjectId",
-                "subjectName",
+                "courseId",
+                "courseName",
                 "assessmentId",
                 "assessmentTitle"
             ],
@@ -277,10 +277,10 @@ struct DebugDataView: View {
                     task.scheduledStart == nil ? "" : formatDate(task.scheduledStart!),
                     task.scheduledEnd == nil ? "" : formatDate(task.scheduledEnd!),
                     formatDouble(task.scheduledDurationHours),
-                    task.subject?.id.uuidString ?? "",
-                    task.subject?.name ?? "",
-                    task.assessment?.id.uuidString ?? "",
-                    task.assessment?.title ?? ""
+                    task.course?.id.uuidString ?? "",
+                    task.course?.name ?? "",
+                    task.assignment?.id.uuidString ?? "",
+                    task.assignment?.title ?? ""
                 ]
             }
         )
@@ -295,7 +295,7 @@ struct DebugDataView: View {
                 "workplace",
                 "startTime",
                 "endTime",
-                "breakMinutes",
+                "colorHex",
                 "totalHours",
                 "note"
             ],
@@ -306,7 +306,7 @@ struct DebugDataView: View {
                     shift.workplace,
                     formatDate(shift.startTime),
                     formatDate(shift.endTime),
-                    "\(shift.breakMinutes)",
+                    shift.colorHex,
                     formatDouble(shift.totalHours),
                     shift.note
                 ]
@@ -323,18 +323,20 @@ struct DebugDataView: View {
                 "location",
                 "startTime",
                 "endTime",
-                "subjectId",
-                "subjectName"
+                "colorHex",
+                "courseId",
+                "courseName"
             ],
             rows: sessions.map { session in
                 [
                     session.id.uuidString,
                     session.title,
-                    session.location,
+                    session.location ?? "",
                     formatDate(session.startTime),
                     formatDate(session.endTime),
-                    session.subject?.id.uuidString ?? "",
-                    session.subject?.name ?? ""
+                    session.colorHex,
+                    session.course?.id.uuidString ?? "",
+                    session.course?.name ?? ""
                 ]
             }
         )
@@ -391,8 +393,8 @@ struct DebugDataView: View {
 
 private var debugDataPreviewContainer: ModelContainer {
     let schema = Schema([
-        Subject.self,
-        Assessment.self,
+        Course.self,
+        Assignment.self,
         TodoTask.self,
         WorkShift.self,
         ClassSession.self

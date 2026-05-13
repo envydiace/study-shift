@@ -10,8 +10,10 @@ import SwiftUI
 
 struct CalendarEvent: Identifiable {
     let id = UUID()
+    let sourceId: UUID
     let title: String
     let start: Date
     let end: Date
     let color: Color
+    let type: EventType
 }

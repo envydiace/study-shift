@@ -11,11 +11,11 @@ import SwiftData
 struct AddAssignmentView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
-    @Query(sort: \Subject.name) private var subjects: [Subject]
+    @Query(sort: \Course.name) private var courses: [Course]
 
     @State private var title = ""
     @State private var dueDate = Date()
-    @State private var selectedSubjectID: UUID?
+    @State private var selectedCourseID: UUID?
     @State private var selectedTargetGrade: GradeTarget = .highDistinction
     @State private var weightText = ""
     @State private var wordLimitText = ""
@@ -26,9 +26,10 @@ struct AddAssignmentView: View {
     @State private var alertMessage = ""
 
     var body: some View {
-        ZStack {
-            Color.tealMain
-                .ignoresSafeArea()
+        NavigationStack {
+            ZStack {
+                Color.tealMain
+                    .ignoresSafeArea()
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
@@ -57,7 +58,6 @@ struct AddAssignmentView: View {
                             }
                             .pickerStyle(.menu)
                         }
-                    }
 
                     inputSection(title: "Target Grade") {
                         Picker("Target Grade", selection: $selectedTargetGrade) {
@@ -65,8 +65,6 @@ struct AddAssignmentView: View {
                                 Text(grade.rawValue).tag(grade)
                             }
                         }
-                        .pickerStyle(.segmented)
-                    }
 
                     inputSection(title: "Weight (%)") {
                         TextField("40", text: $weightText)
@@ -99,16 +97,79 @@ struct AddAssignmentView: View {
                                             .font(.subheadline)
                                     }
                                 }
-                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .pickerStyle(.menu)
                             }
                         }
-                    }
 
-                    Button {
-                        saveAssignment()
-                    } label: {
-                        Text("+ Add Assignment")
-                            .frame(maxWidth: .infinity)
+                        fieldSection("Target Grade") {
+                            Picker("Target Grade", selection: $selectedTargetGrade) {
+                                ForEach(GradeTarget.allCases, id: \.self) { grade in
+                                    Text(grade.rawValue).tag(grade)
+                                }
+                            }
+                            .pickerStyle(.segmented)
+                        }
+
+                        fieldSection("Weight (%)") {
+                            TextField("40", text: $weightText)
+                                .keyboardType(.decimalPad)
+                        }
+
+                        fieldSection("Word Limit") {
+                            TextField("1000", text: $wordLimitText)
+                                .keyboardType(.numberPad)
+                        }
+
+                        fieldSection("Sub Tasks / To Do") {
+                            VStack(spacing: 10) {
+                                HStack {
+                                    TextField("Add a task", text: $taskDraft)
+
+                                    Button {
+                                        addTask()
+                                    } label: {
+                                        Image(systemName: "plus.circle.fill")
+                                            .font(.title3)
+                                            .foregroundStyle(.tealDark)
+                                    }
+                                }
+
+                                if !taskTitles.isEmpty {
+                                    VStack(alignment: .leading, spacing: 8) {
+                                        ForEach(taskTitles, id: \.self) { task in
+                                            HStack {
+                                                Image(systemName: "checkmark.square")
+                                                    .foregroundStyle(.tealDark)
+                                                Text(task)
+                                                    .font(.subheadline)
+                                            }
+                                        }
+                                    }
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                }
+                            }
+                        }
+
+                        Button {
+                            saveAssignment()
+                        } label: {
+                            Text("+ Add Assignment")
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.top, 8)
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.top, 20)
+                    .padding(.bottom, 40)
+                }
+            }
+            .navigationTitle("Add Assignment")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Cancel") {
+                        dismiss()
                     }
                     .buttonStyle(PillButtonStyle())
                     .padding(.top, 8)
@@ -125,16 +186,21 @@ struct AddAssignmentView: View {
             Text(alertMessage)
         }
         .onAppear {
-            if let firstSubject = subjects.first {
-                selectedSubjectID = firstSubject.id
-                selectedTargetGrade = firstSubject.targetGrade
+            if let firstCourse = courses.first {
+                selectedCourseID = firstCourse.id
+                selectedTargetGrade = firstCourse.targetGrade
             }
         }
-        .onChange(of: selectedSubjectID) { _, newValue in
+        .onChange(of: selectedCourseID) { _, newValue in
             guard let newValue,
-                  let selected = subjects.first(where: { $0.id == newValue }) else { return }
-            selectedTargetGrade = selected.targetGrade
+                  let course = courses.first(where: { $0.id == newValue }) else { return }
+            selectedTargetGrade = course.targetGrade
         }
+    }
+
+    private var selectedCourse: Course? {
+        guard let selectedCourseID else { return nil }
+        return courses.first(where: { $0.id == selectedCourseID })
     }
 
     private var header: some View {
@@ -200,14 +266,14 @@ struct AddAssignmentView: View {
         Word Limit: \(wordLimitText.isEmpty ? "-" : wordLimitText)
         """
 
-        let newAssignment = Assessment(
+        let assignment = Assignment(
             title: trimmedTitle,
-            assessmentType: .assignment,
+            assignmentType: .assignment,
             dueDate: dueDate,
             weight: weight,
             status: .notStarted,
             note: note,
-            subject: selectedSubject
+            course: selectedCourse
         )
 
         modelContext.insert(newAssignment)
@@ -216,8 +282,8 @@ struct AddAssignmentView: View {
             let task = TodoTask(
                 title: item,
                 dueDate: dueDate,
-                subject: selectedSubject,
-                assessment: newAssignment
+                course: selectedCourse,
+                assignment: assignment
             )
             modelContext.insert(task)
             newAssignment.tasks.append(task)
@@ -238,5 +304,5 @@ struct AddAssignmentView: View {
 
 #Preview {
     AddAssignmentView()
+        .modelContainer(ModelContainerFactory.createPreviewContainer())
 }
-

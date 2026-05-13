@@ -7,6 +7,14 @@
 
 import Foundation
 
+enum MainTab {
+    case home
+    case calendar
+    case tasks
+    case work
+    case more
+}
+
 enum GradeTarget: String, Codable, CaseIterable {
     case pass = "P"
     case credit = "C"
@@ -24,7 +32,7 @@ enum Weekday: String, Codable, CaseIterable {
     case sunday = "Sunday"
 }
 
-enum AssessmentType: String, Codable, CaseIterable {
+enum AssignmentType: String, Codable, CaseIterable {
     case assignment = "Assignment"
     case quiz = "Quiz"
     case exam = "Exam"
@@ -33,7 +41,7 @@ enum AssessmentType: String, Codable, CaseIterable {
     case other = "Other"
 }
 
-enum AssessmentStatus: String, Codable, CaseIterable {
+enum AssignmentStatus: String, Codable, CaseIterable {
     case notStarted = "Not Started"
     case inProgress = "In Progress"
     case submitted = "Submitted"
@@ -44,6 +52,34 @@ enum TaskPriority: String, Codable, CaseIterable {
     case low = "Low"
     case medium = "Medium"
     case high = "High"
+}
+
+enum EventType: String, CaseIterable, Hashable {
+    case personal = "Personal"
+    case classSession = "Class"
+    case workShift = "Work Shift"
+    case task = "Task"
+    
+    static var addEventTypes: [EventType] {
+        [
+            .personal,
+            .classSession,
+            .workShift
+        ]
+    }
+
+    var iconName: String {
+        switch self {
+        case .personal:
+            return "person.fill"
+        case .classSession:
+            return "book.fill"
+        case .workShift:
+            return "briefcase.fill"
+        case .task:
+            return "task.fill"
+        }
+    }
 }
 
 enum Constants {

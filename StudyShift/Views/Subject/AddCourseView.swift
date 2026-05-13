@@ -1,5 +1,5 @@
 //
-//  SubjectFormView.swift
+//  AddCourseView.swift
 //  StudyShift
 //
 //  Created by Đức Anh on 26/4/26.
@@ -7,26 +7,26 @@
 import SwiftUI
 import SwiftData
 
-struct SubjectFormView: View {
+struct AddCourseView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
 
     let onSaved: (() -> Void)?
 
-    @StateObject private var viewModel: SubjectFormViewModel
+    @StateObject private var viewModel: AddCourseViewModel
 
     init(onSaved: (() -> Void)? = nil) {
         self.onSaved = onSaved
-        _viewModel = StateObject(wrappedValue: SubjectFormViewModel())
+        _viewModel = StateObject(wrappedValue: AddCourseViewModel())
     }
     
     var body: some View {
         NavigationStack {
             Form {
-                Section("Subject Information") {
-                    TextField("Subject name", text: $viewModel.name)
+                Section("Course Information") {
+                    TextField("Course name", text: $viewModel.name)
 
-                    TextField("Subject code", text: $viewModel.code)
+                    TextField("Course code", text: $viewModel.code)
                         .textInputAutocapitalization(.characters)
                 }
 
@@ -40,7 +40,7 @@ struct SubjectFormView: View {
                 }
 
                 Section("Color") {
-                    Picker("Subject Color", selection: $viewModel.colorHex) {
+                    Picker("Course Color", selection: $viewModel.colorHex) {
                         ForEach(viewModel.colorOptions, id: \.self) { color in
                             HStack {
                                 Circle()
@@ -61,7 +61,7 @@ struct SubjectFormView: View {
                     }
                 }
             }
-            .navigationTitle("Add Subject")
+            .navigationTitle("Add Course")
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Cancel") {
@@ -71,7 +71,7 @@ struct SubjectFormView: View {
 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Save") {
-                        let success = viewModel.saveSubject()
+                        let success = viewModel.saveCourse()
 
                         if success {
                             onSaved?()
@@ -88,5 +88,5 @@ struct SubjectFormView: View {
 }
 
 #Preview {
-    SubjectFormView()
+    AddCourseView()
 }

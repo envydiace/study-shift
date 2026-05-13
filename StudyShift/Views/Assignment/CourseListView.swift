@@ -8,7 +8,7 @@ import SwiftUI
 import SwiftData
 
 struct CourseListView: View {
-    @Query(sort: \Subject.name) private var subjects: [Subject]
+    @Query(sort: \Course.name) private var courses: [Course]
 
     var body: some View {
         ZStack {
@@ -19,7 +19,7 @@ struct CourseListView: View {
                 VStack(alignment: .leading, spacing: 18) {
                     header
 
-                    if subjects.isEmpty {
+                    if courses.isEmpty {
                         Text("No courses yet")
                             .font(.headline)
                             .padding()
@@ -27,12 +27,12 @@ struct CourseListView: View {
                             .background(Color.surfaceCard)
                             .clipShape(RoundedRectangle(cornerRadius: 16))
                     } else {
-                        ForEach(subjects) { subject in
+                        ForEach(courses) { course in
                             VStack(alignment: .leading, spacing: 8) {
-                                Text("\(subject.code) \(subject.name)")
+                                Text("\(course.code) \(course.name)")
                                     .font(.headline)
 
-                                Text("Target: \(subject.targetGrade.rawValue)")
+                                Text("Target: \(course.targetGrade.rawValue)")
                                     .font(.subheadline)
                                     .foregroundStyle(.secondary)
                             }
@@ -41,7 +41,7 @@ struct CourseListView: View {
                             .background(Color.surfaceCard)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 18)
-                                    .stroke(Color(hex: subject.colorHex).opacity(0.45), lineWidth: 2)
+                                    .stroke(Color(hex: course.colorHex).opacity(0.45), lineWidth: 2)
                             )
                             .clipShape(RoundedRectangle(cornerRadius: 18))
                         }
@@ -79,5 +79,6 @@ struct CourseListView: View {
 
 #Preview {
     CourseListView()
+        .modelContainer(ModelContainerFactory.createPreviewContainer())
 }
 

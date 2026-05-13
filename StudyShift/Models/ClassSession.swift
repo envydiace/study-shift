@@ -9,35 +9,38 @@ import Foundation
 import SwiftData
 
 @Model
-final class ClassSession {
+final class ClassSession: UUIDIdentifiableModel {
     var id = UUID()
     var title: String
-    var location: String
+    var location: String?
     var startTime: Date
     var endTime: Date
+    var colorHex: String
 
     var externalEventId: String?
     var sourceURL: String?
 
-    var subject: Subject?
+    var course: Course?
 
     init(
         id: UUID = UUID(),
         title: String,
-        location: String = "",
+        location: String?,
         startTime: Date,
         endTime: Date,
+        colorHex: String,
         externalEventId: String? = nil,
         sourceURL: String? = nil,
-        subject: Subject? = nil
+        course: Course? = nil
     ) {
         self.id = id
         self.title = title
         self.location = location
         self.startTime = startTime
         self.endTime = endTime
+        self.colorHex = colorHex
         self.externalEventId = externalEventId
         self.sourceURL = sourceURL
-        self.subject = subject
+        self.course = course
     }
 }

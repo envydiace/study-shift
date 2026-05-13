@@ -8,35 +8,35 @@
 import Foundation
 import SwiftData
 
-struct SubjectRepository: RepositoryProtocol {
-    typealias Entity = Subject
+struct CourseRepository: RepositoryProtocol {
+    typealias Entity = Course
 
     let context: ModelContext
 
-    func fetchAll() throws -> [Subject] {
-        let descriptor = FetchDescriptor<Subject>(
+    func fetchAll() throws -> [Course] {
+        let descriptor = FetchDescriptor<Course>(
             sortBy: [SortDescriptor(\.name)]
         )
         return try fetch(with: descriptor)
     }
 
-    func fetchByCode(_ code: String) throws -> Subject? {
-        let descriptor = FetchDescriptor<Subject>(
-            predicate: #Predicate { subject in
-                subject.code == code
+    func fetchByCode(_ code: String) throws -> Course? {
+        let descriptor = FetchDescriptor<Course>(
+            predicate: #Predicate { course in
+                course.code == code
             }
         )
         return try fetch(with: descriptor).first
     }
 }
 
-struct AssessmentRepository: RepositoryProtocol {
-    typealias Entity = Assessment
+struct AssignmentRepository: RepositoryProtocol {
+    typealias Entity = Assignment
 
     let context: ModelContext
 
-    func fetchAll() throws -> [Assessment] {
-        let descriptor = FetchDescriptor<Assessment>(
+    func fetchAll() throws -> [Assignment] {
+        let descriptor = FetchDescriptor<Assignment>(
             sortBy: [SortDescriptor(\.dueDate)]
         )
         return try fetch(with: descriptor)
@@ -83,6 +83,24 @@ struct ClassSessionRepository: RepositoryProtocol {
         )
         return try fetch(with: descriptor).first
     }
+    
+    func fetchUpcomingClasses(
+            from date: Date = Date(),
+            limit: Int = 2
+        ) throws -> [ClassSession] {
+        let descriptor = FetchDescriptor<ClassSession>(
+            predicate: #Predicate { classSession in
+                classSession.startTime > date
+            },
+            sortBy: [
+                SortDescriptor(\.startTime, order: .forward)
+            ]
+        )
+
+        let result = try fetch(with: descriptor)
+
+        return Array(result.prefix(limit))
+    }
 }
 
 struct WorkShiftRepository: RepositoryProtocol {
@@ -93,6 +111,35 @@ struct WorkShiftRepository: RepositoryProtocol {
     func fetchAll() throws -> [WorkShift] {
         let descriptor = FetchDescriptor<WorkShift>(
             sortBy: [SortDescriptor(\.startTime)]
+        )
+        return try fetch(with: descriptor)
+    }
+    
+    func fetchShifts(
+            from startDate: Date,
+            to endDate: Date
+        ) throws -> [WorkShift] {
+            let descriptor = FetchDescriptor<WorkShift>(
+                predicate: #Predicate { shift in
+                    shift.startTime >= startDate && shift.startTime < endDate
+                },
+                sortBy: [
+                    SortDescriptor(\.startTime, order: .forward)
+                ]
+            )
+
+            return try fetch(with: descriptor)
+        }
+}
+
+struct PersonalEventRepository: RepositoryProtocol {
+    typealias Entity = PersonalEvent
+
+    let context: ModelContext
+
+    func fetchAll() throws -> [PersonalEvent] {
+        let descriptor = FetchDescriptor<PersonalEvent>(
+            sortBy: [SortDescriptor(\.startDate)]
         )
         return try fetch(with: descriptor)
     }
