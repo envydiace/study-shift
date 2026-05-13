@@ -27,12 +27,12 @@ struct MainTabView: View {
                 }
                 .tag(MainTab.calendar)
 
-            StudyTasksView()
+            AssignmentsView()
                 .tabItem {
-                    Image(systemName: "checklist")
-                    Text("Tasks")
+                    Image(systemName: "doc.text.fill")
+                    Text("Assignment")
                 }
-                .tag(MainTab.tasks)
+                .tag(MainTab.assignment)
 
             WorkShiftView()
                 .tabItem {
@@ -41,12 +41,12 @@ struct MainTabView: View {
                 }
                 .tag(MainTab.work)
 
-            MoreView()
+            ProfileSettingsView()
                 .tabItem {
-                    Image(systemName: "ellipsis.circle.fill")
-                    Text("More")
+                    Image(systemName: "person.crop.circle.fill")
+                    Text("Profile")
                 }
-                .tag(MainTab.more)
+                .tag(MainTab.profile)
         }
     }
 }

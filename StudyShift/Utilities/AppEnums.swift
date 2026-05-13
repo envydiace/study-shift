@@ -10,9 +10,9 @@ import Foundation
 enum MainTab {
     case home
     case calendar
-    case tasks
+    case assignment
     case work
-    case more
+    case profile
 }
 
 enum GradeTarget: String, Codable, CaseIterable {
@@ -20,16 +20,6 @@ enum GradeTarget: String, Codable, CaseIterable {
     case credit = "C"
     case distinction = "D"
     case highDistinction = "HD"
-}
-
-enum Weekday: String, Codable, CaseIterable {
-    case monday = "Monday"
-    case tuesday = "Tuesday"
-    case wednesday = "Wednesday"
-    case thursday = "Thursday"
-    case friday = "Friday"
-    case saturday = "Saturday"
-    case sunday = "Sunday"
 }
 
 enum AssignmentType: String, Codable, CaseIterable {

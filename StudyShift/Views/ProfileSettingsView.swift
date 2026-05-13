@@ -14,7 +14,8 @@ struct ProfileSettingsView: View {
 
     @State private var profile: StudentProfile? = nil
     @State private var showEditSheet: Bool = false
-
+    @State private var showImportClassesSheet: Bool = false
+    
     // Editable fields
     @State private var editName: String = ""
     @State private var editDegree: String = ""
@@ -48,6 +49,9 @@ struct ProfileSettingsView: View {
         .sheet(isPresented: $showEditSheet) {
             editSheet
         }
+        .sheet(isPresented: $showImportClassesSheet) {
+            TimetableImportView()
+        }
         .task {
             loadProfile()
         }
@@ -63,11 +67,11 @@ struct ProfileSettingsView: View {
 
             Spacer()
 
-            Image(systemName: "bell")
-                .foregroundStyle(.black)
-                .padding(8)
-                .background(Color.white)
-                .clipShape(Circle())
+//            Image(systemName: "bell")
+//                .foregroundStyle(.black)
+//                .padding(8)
+//                .background(Color.white)
+//                .clipShape(Circle())
         }
     }
 
@@ -158,6 +162,25 @@ struct ProfileSettingsView: View {
 
     private var settingsSection: some View {
         VStack(spacing: 1) {
+            Button {
+                showImportClassesSheet = true
+            } label: {
+                HStack {
+                    Image(systemName: "square.and.arrow.down")
+                        .frame(width: 24)
+                        .foregroundStyle(Color.tealDark)
+                    Text("Import Time Table")
+                        .font(.subheadline)
+                        .foregroundStyle(.black)
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.caption)
+                        .foregroundStyle(.black.opacity(0.3))
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
+            }
+            Divider().padding(.horizontal, 16)
             settingsRow(icon: "bell", label: "Notifications")
             Divider().padding(.horizontal, 16)
             settingsRow(icon: "questionmark.circle", label: "Help & Support")
