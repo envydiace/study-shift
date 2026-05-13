@@ -8,6 +8,9 @@
 import SwiftUI
 import SwiftData
 
+// Typealias to avoid Swift parser issues with named tuples in function signatures
+typealias WorkplaceGroup = (workplace: String, shifts: [WorkShift], totalHours: Double, durationLabel: String)
+
 struct WorkShiftView: View {
     @Environment(\.modelContext) private var context
     @StateObject private var viewModel = WorkShiftViewModel()
@@ -60,6 +63,29 @@ struct WorkShiftView: View {
         }
     }
 
+    private var remainingLabel: String {
+            let totalWorkedMinutes = viewModel.shiftsThisFortnight.reduce(0) { total, shift in
+                total + Int(shift.endTime.timeIntervalSince(shift.startTime) / 60)
+            }
+            let visaMinutes = Int(visaLimit * 60)
+            let remainingMinutes = max(0, visaMinutes - totalWorkedMinutes)
+            let hours = remainingMinutes / 60
+            let minutes = remainingMinutes % 60
+            if minutes == 0 {
+                return "\(hours)h remaining"
+            }
+            return "\(hours)h \(minutes)m remaining"
+        }
+
+        private var isLowHours: Bool {
+            let totalWorkedMinutes = viewModel.shiftsThisFortnight.reduce(0) { total, shift in
+                total + Int(shift.endTime.timeIntervalSince(shift.startTime) / 60)
+            }
+            let visaMinutes = Int(visaLimit * 60)
+            let remainingMinutes = max(0, visaMinutes - totalWorkedMinutes)
+            return remainingMinutes < 600 // less than 10 hours
+        }
+
     // MARK: - Header
 
     private var headerBar: some View {
@@ -81,63 +107,87 @@ struct WorkShiftView: View {
     // MARK: - Visa Card
 
     private var visaCard: some View {
-        VStack(spacing: 0) {
-            HStack(alignment: .center, spacing: 16) {
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack(spacing: 6) {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundStyle(.yellow)
-                        Text("Only \(Int(visaLimit - viewModel.totalHoursThisFortnight)) hrs remaining")
-                            .font(.subheadline.bold())
-                            .foregroundStyle(.black)
+            VStack(spacing: 8) {
+                HStack(alignment: .center, spacing: 16) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack(spacing: 6) {
+                            if isLowHours {
+                                Image(systemName: "exclamationmark.triangle.fill")
+                                    .foregroundStyle(.yellow)
+                            }
+                            Text(remainingLabel)
+                                .font(.subheadline.bold())
+                                .foregroundStyle(.black)
+                                .lineLimit(1)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        Text("Plan Shifts Carefully")
+                            .font(.caption)
+                            .foregroundStyle(.black.opacity(0.6))
                     }
-                    Text("Plan Shifts Carefully")
+
+                    Spacer()
+
+                    ZStack {
+                        Circle()
+                            .stroke(Color.black.opacity(0.1), lineWidth: 8)
+                            .frame(width: 64, height: 64)
+
+                        Circle()
+                            .trim(from: 0, to: CGFloat(min(viewModel.totalHoursThisFortnight / visaLimit, 1)))
+                            .stroke(isLowHours ? Color.red : Color.tealDark, style: StrokeStyle(lineWidth: 8, lineCap: .round))
+                            .rotationEffect(.degrees(-90))
+                            .frame(width: 64, height: 64)
+
+                        VStack(spacing: 0) {
+                            Text(circleHoursLabel)
+                                .font(.caption.bold())
+                                .foregroundStyle(.black)
+                            if circleMinutesLabel != nil {
+                                Text(circleMinutesLabel!)
+                                    .font(.system(size: 9, weight: .bold))
+                                    .foregroundStyle(.black)
+                            }
+                        }
+                    }
+
+                    Button {
+                        // ellipsis menu placeholder
+                    } label: {
+                        Image(systemName: "ellipsis")
+                            .foregroundStyle(.black.opacity(0.5))
+                    }
+                }
+                .padding(16)
+                .background(Color.surfaceCard)
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+
+                HStack {
+                    Text("Visa Restriction Of \(Int(visaLimit)) Hrs")
                         .font(.caption)
-                        .foregroundStyle(.black.opacity(0.6))
+                        .foregroundStyle(.black.opacity(0.7))
+                    Spacer()
                 }
-
-                Spacer()
-
-                ZStack {
-                    Circle()
-                        .stroke(Color.black.opacity(0.1), lineWidth: 8)
-                        .frame(width: 64, height: 64)
-
-                    Circle()
-                        .trim(from: 0, to: CGFloat(viewModel.totalHoursThisFortnight / visaLimit))
-                        .stroke(Color.tealDark, style: StrokeStyle(lineWidth: 8, lineCap: .round))
-                        .rotationEffect(.degrees(-90))
-                        .frame(width: 64, height: 64)
-
-                    Text("\(Int(viewModel.totalHoursThisFortnight)) h")
-                        .font(.caption.bold())
-                        .foregroundStyle(.black)
-                }
-
-                Button {
-                    // ellipsis menu placeholder
-                } label: {
-                    Image(systemName: "ellipsis")
-                        .foregroundStyle(.black.opacity(0.5))
-                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .padding(.top, 4)
+                .background(Color.white.opacity(0.4))
+                .clipShape(RoundedRectangle(cornerRadius: 10))
             }
-            .padding(16)
-            .background(Color.surfaceCard)
-            .clipShape(RoundedRectangle(cornerRadius: 16))
-
-            // Visa restriction label
-            HStack {
-                Text("Visa Restriction Of \(Int(visaLimit)) Hrs")
-                    .font(.caption)
-                    .foregroundStyle(.black.opacity(0.7))
-                Spacer()
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
-            .background(Color.white.opacity(0.4))
-            .clipShape(RoundedRectangle(cornerRadius: 10))
         }
-    }
+
+        private var circleHoursLabel: String {
+            let hours = Int(viewModel.totalHoursThisFortnight)
+            return "\(hours)h"
+        }
+
+        private var circleMinutesLabel: String? {
+            let totalMinutes = viewModel.shiftsThisFortnight.reduce(0) { total, shift in
+                total + Int(shift.endTime.timeIntervalSince(shift.startTime) / 60)
+            }
+            let minutes = totalMinutes % 60
+            return minutes == 0 ? nil : "\(minutes)m"
+        }
 
     // MARK: - Fortnight Section
 
@@ -160,7 +210,7 @@ struct WorkShiftView: View {
         }
     }
 
-    private func workplaceRow(group: (workplace: String, shifts: [WorkShift], totalHours: Double)) -> some View {
+    private func workplaceRow(group: WorkplaceGroup) -> some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
                 Text(group.workplace)
@@ -174,7 +224,7 @@ struct WorkShiftView: View {
 
             Spacer()
 
-            Text("\(Int(group.totalHours)) h")
+            Text(group.durationLabel)
                 .font(.headline.bold())
                 .foregroundStyle(.black)
         }

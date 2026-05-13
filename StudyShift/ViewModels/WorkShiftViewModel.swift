@@ -41,8 +41,17 @@ final class WorkShiftViewModel: ObservableObject {
         }
     }
 
+    // MARK: - Fortnight totals
+
     var totalHoursThisFortnight: Double {
         shiftsThisFortnight.reduce(0) { $0 + $1.totalHours }
+    }
+
+    var fortnightDurationLabel: String {
+        let totalMinutes = shiftsThisFortnight.reduce(0) { total, shift in
+            total + Int(shift.endTime.timeIntervalSince(shift.startTime) / 60)
+        }
+        return durationLabel(from: totalMinutes)
     }
 
     var shiftsThisFortnight: [WorkShift] {
@@ -50,10 +59,18 @@ final class WorkShiftViewModel: ObservableObject {
         return shifts.filter { $0.startTime >= range.start && $0.startTime <= range.end }
     }
 
-    var shiftsByWorkplace: [(workplace: String, shifts: [WorkShift], totalHours: Double)] {
+    var shiftsByWorkplace: [(workplace: String, shifts: [WorkShift], totalHours: Double, durationLabel: String)] {
         let grouped = Dictionary(grouping: shiftsThisFortnight, by: { $0.workplace })
         return grouped.map { key, value in
-            (workplace: key, shifts: value, totalHours: value.reduce(0) { $0 + $1.totalHours })
+            let totalMinutes = value.reduce(0) { total, shift in
+                total + Int(shift.endTime.timeIntervalSince(shift.startTime) / 60)
+            }
+            return (
+                workplace: key,
+                shifts: value,
+                totalHours: value.reduce(0) { $0 + $1.totalHours },
+                durationLabel: durationLabel(from: totalMinutes)
+            )
         }.sorted { $0.workplace < $1.workplace }
     }
 
@@ -66,6 +83,17 @@ final class WorkShiftViewModel: ObservableObject {
             return formatter.string(from: first.startTime)
         }
         return "\(formatter.string(from: first.startTime)), \(formatter.string(from: last.startTime))"
+    }
+
+    // MARK: - Helpers
+
+    private func durationLabel(from totalMinutes: Int) -> String {
+        let hours = totalMinutes / 60
+        let minutes = totalMinutes % 60
+        if minutes == 0 {
+            return "\(hours) h"
+        }
+        return "\(hours) h \(minutes) m"
     }
 
     private func currentFortnightRange() -> (start: Date, end: Date) {

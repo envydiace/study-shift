@@ -12,15 +12,15 @@ import SwiftData
 
 final class DashboardViewModel: ObservableObject {
     @Published var errorMessage: String?
-    
+
     @Published var greetingTitle: String = "Hi, Welcome Back"
     @Published var greetingSubtitle: String = "Good Morning"
-    
+
     @Published var remainingHoursText: String = "No shift data"
     @Published var remainingHoursSubtitle: String = "Plan Shifts Carefully"
     @Published var workedHoursText: String = "0 h"
     @Published var workedProgress: Double = 0
-    
+
     @Published var assessments: [DashboardAssessmentItem] = [
         DashboardAssessmentItem(
             subjectCode: "32541",
@@ -54,14 +54,37 @@ final class DashboardViewModel: ObservableObject {
             statusBackground: Color.yellow.opacity(0.28)
         )
     ]
-    
+
     private var classSessionRepository: ClassSessionRepository?
     private var workShiftRepository: WorkShiftRepository?
-    
+
+    // MARK: - Computed properties for visa card
+
+    var isLowHours: Bool {
+        let remainingHours = max(48 - (workedProgress * 48), 0)
+        return remainingHours < 10
+    }
+
+    var workedHoursLabel: String {
+        let totalWorkedMinutes = Int(workedProgress * 48 * 60)
+        let hours = totalWorkedMinutes / 60
+        return "\(hours)h"
+    }
+
+    var workedMinutesLabel: String? {
+        let totalWorkedMinutes = Int(workedProgress * 48 * 60)
+        let minutes = totalWorkedMinutes % 60
+        return minutes == 0 ? nil : "\(minutes)m"
+    }
+
+    // MARK: - Configure
+
     func configure(context: ModelContext) {
         self.classSessionRepository = ClassSessionRepository(context: context)
         self.workShiftRepository = WorkShiftRepository(context: context)
     }
+
+    // MARK: - Load shift summary
 
     func loadShiftSummary() {
         guard let workShiftRepository else {
@@ -81,17 +104,26 @@ final class DashboardViewModel: ObservableObject {
             let remainingHours = max(48 - totalHours, 0)
 
             workedHoursText = formatHours(totalHours)
-            remainingHoursText = "Only \(formatHours(remainingHours)) remaining"
-            remainingHoursSubtitle = "Plan Shifts Carefully"
             workedProgress = min(totalHours / 48, 1)
 
+            let remainingMins = Int(remainingHours * 60)
+            let rHours = remainingMins / 60
+            let rMinutes = remainingMins % 60
+            remainingHoursText = rMinutes == 0
+                ? "\(rHours)h remaining"
+                : "\(rHours)h \(rMinutes)m remaining"
+
+            remainingHoursSubtitle = "Plan Shifts Carefully"
             errorMessage = nil
+
         } catch {
             errorMessage = "Failed to load shift summary."
             print("Load shift summary error:", error)
         }
     }
-    
+
+    // MARK: - Load upcoming classes
+
     func loadUpcomingClasses() {
         guard let classSessionRepository else {
             errorMessage = "Class session repository is not configured."
@@ -118,7 +150,9 @@ final class DashboardViewModel: ObservableObject {
             print("Load upcoming classes error:", error)
         }
     }
-    
+
+    // MARK: - Helpers
+
     private func calculateTotalHours(from shifts: [WorkShift]) -> Double {
         shifts.reduce(into: 0.0) { total, shift in
             let duration = shift.endTime.timeIntervalSince(shift.startTime)
@@ -131,13 +165,12 @@ final class DashboardViewModel: ObservableObject {
         if hours.truncatingRemainder(dividingBy: 1) == 0 {
             return "\(Int(hours)) h"
         }
-
         return String(format: "%.1f h", hours)
     }
-    
+
     private func currentFortnightPeriod(from date: Date = Date()) -> (start: Date, end: Date) {
         var calendar = Calendar.current
-        calendar.firstWeekday = 2 // Monday
+        calendar.firstWeekday = 2
 
         let startOfToday = calendar.startOfDay(for: date)
 

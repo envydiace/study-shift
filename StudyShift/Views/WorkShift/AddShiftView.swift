@@ -15,9 +15,8 @@ struct AddShiftView: View {
     let onSaved: (() -> Void)?
 
     @State private var employer: String = ""
-    @State private var date: Date = Date()
     @State private var startTime: Date = Date()
-    @State private var numberOfHours: String = ""
+    @State private var endTime: Date = Calendar.current.date(byAdding: .hour, value: 1, to: Date()) ?? Date()
     @State private var showError: Bool = false
     @State private var errorMessage: String = ""
 
@@ -34,20 +33,22 @@ struct AddShiftView: View {
                         TextField("ABC Store", text: $employer)
                     }
 
-                    fieldSection("Date") {
-                        DatePicker("", selection: $date, displayedComponents: .date)
+                    fieldSection("Start Time") {
+                        DatePicker("", selection: $startTime, displayedComponents: [.date, .hourAndMinute])
+                            .labelsHidden()
+                            .onChange(of: startTime) { _, newStart in
+                                if endTime <= newStart {
+                                    endTime = Calendar.current.date(byAdding: .hour, value: 1, to: newStart) ?? newStart
+                                }
+                            }
+                    }
+
+                    fieldSection("End Time") {
+                        DatePicker("", selection: $endTime, in: startTime..., displayedComponents: [.date, .hourAndMinute])
                             .labelsHidden()
                     }
 
-                    fieldSection("Time") {
-                        DatePicker("", selection: $startTime, displayedComponents: .hourAndMinute)
-                            .labelsHidden()
-                    }
-
-                    fieldSection("Number of Hours") {
-                        TextField("8 hrs", text: $numberOfHours)
-                            .keyboardType(.decimalPad)
-                    }
+                    durationPreview
 
                     Button {
                         saveShift()
@@ -74,6 +75,34 @@ struct AddShiftView: View {
             Text(errorMessage)
         }
     }
+
+    // MARK: - Duration preview
+
+    private var durationPreview: some View {
+        let totalMinutes = max(0, Int(endTime.timeIntervalSince(startTime) / 60))
+        let hours = totalMinutes / 60
+        let minutes = totalMinutes % 60
+        let label: String = {
+            if totalMinutes == 0 { return "0 h" }
+            if minutes == 0 { return "\(hours) h" }
+            return "\(hours) h \(minutes) m"
+        }()
+
+        return HStack {
+            Image(systemName: "clock")
+                .foregroundStyle(.black.opacity(0.5))
+            Text("Duration: \(label)")
+                .font(.subheadline)
+                .foregroundStyle(.black.opacity(0.7))
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.white.opacity(0.35))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    // MARK: - Header
 
     private var header: some View {
         HStack {
@@ -111,6 +140,8 @@ struct AddShiftView: View {
         }
     }
 
+    // MARK: - Save
+
     private func saveShift() {
         let trimmedEmployer = employer.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedEmployer.isEmpty else {
@@ -119,37 +150,17 @@ struct AddShiftView: View {
             return
         }
 
-        guard let hours = Double(numberOfHours), hours > 0 else {
-            errorMessage = "Please enter a valid number of hours."
+        guard endTime > startTime else {
+            errorMessage = "End time must be after start time."
             showError = true
             return
         }
-
-        // Combine date + time into startTime, calculate endTime from hours
-        let calendar = Calendar.current
-        let dateComponents = calendar.dateComponents([.year, .month, .day], from: date)
-        let timeComponents = calendar.dateComponents([.hour, .minute], from: startTime)
-
-        var combined = DateComponents()
-        combined.year = dateComponents.year
-        combined.month = dateComponents.month
-        combined.day = dateComponents.day
-        combined.hour = timeComponents.hour
-        combined.minute = timeComponents.minute
-
-        guard let finalStart = calendar.date(from: combined) else {
-            errorMessage = "Invalid date/time."
-            showError = true
-            return
-        }
-
-        let finalEnd = finalStart.addingTimeInterval(hours * 3600)
 
         let shift = WorkShift(
             title: trimmedEmployer,
             workplace: trimmedEmployer,
-            startTime: finalStart,
-            endTime: finalEnd
+            startTime: startTime,
+            endTime: endTime
         )
 
         context.insert(shift)

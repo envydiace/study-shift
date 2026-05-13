@@ -37,9 +37,16 @@ final class WorkShift: UUIDIdentifiableModel {
     }
 
     var totalHours: Double {
-//        let duration = endTime.timeIntervalSince(startTime) / 3600
-//        let breakHours = Double(breakMinutes) / 60
-//        return max(duration - breakHours, 0)
         return endTime.timeIntervalSince(startTime) / 3600
+    }
+
+    var durationLabel: String {
+        let totalMinutes = Int(endTime.timeIntervalSince(startTime) / 60)
+        let hours = totalMinutes / 60
+        let minutes = totalMinutes % 60
+        if minutes == 0 {
+            return "\(hours) h"
+        }
+        return "\(hours) h \(minutes) m"
     }
 }
