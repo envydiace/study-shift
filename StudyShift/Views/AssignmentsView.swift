@@ -25,7 +25,12 @@ struct AssignmentsView: View {
                         emptyState
                     } else {
                         ForEach(assignments) { assignment in
-                            AssignmentCardView(assessment: assignment)
+                            NavigationLink {
+                                AssignmentDetailView(assessment: assignment)
+                            } label: {
+                                AssignmentCardView(assessment: assignment)
+                            }
+                            .buttonStyle(.plain)
                         }
                     }
 

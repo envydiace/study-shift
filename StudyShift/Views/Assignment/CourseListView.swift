@@ -28,22 +28,27 @@ struct CourseListView: View {
                             .clipShape(RoundedRectangle(cornerRadius: 16))
                     } else {
                         ForEach(subjects) { subject in
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text("\(subject.code) \(subject.name)")
-                                    .font(.headline)
+                            NavigationLink {
+                                CourseDetailView(subject: subject)
+                            } label: {
+                                VStack(alignment: .leading, spacing: 8) {
+                                    Text("\(subject.code) \(subject.name)")
+                                        .font(.headline)
 
-                                Text("Target: \(subject.targetGrade.rawValue)")
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
+                                    Text("Target: \(subject.targetGrade.rawValue)")
+                                        .font(.subheadline)
+                                        .foregroundStyle(.secondary)
+                                }
+                                .padding(18)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(Color.surfaceCard)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 18)
+                                        .stroke(Color(hex: subject.colorHex).opacity(0.45), lineWidth: 2)
+                                )
+                                .clipShape(RoundedRectangle(cornerRadius: 18))
                             }
-                            .padding(18)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(Color.surfaceCard)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 18)
-                                    .stroke(Color(hex: subject.colorHex).opacity(0.45), lineWidth: 2)
-                            )
-                            .clipShape(RoundedRectangle(cornerRadius: 18))
+                            .buttonStyle(.plain)
                         }
                     }
                 }
@@ -80,4 +85,3 @@ struct CourseListView: View {
 #Preview {
     CourseListView()
 }
-
