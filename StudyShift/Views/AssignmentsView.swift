@@ -6,200 +6,161 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct AssignmentsView: View {
+    @Query(sort: \Assessment.dueDate) private var assessments: [Assessment]
+
     var body: some View {
-        /// TODO: implement Assessments Screen
-        /// edited the target device for debugging.
-        
         ZStack {
             Color.tealMain
-                        .ignoresSafeArea()
+                .ignoresSafeArea()
 
-                    VStack(spacing: 0) {
-                        mainContent
-                            .padding(.vertical, 4)
-                        bottomTabBar
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 20) {
+                    header
+
+                    if assessments.isEmpty {
+                        Text("No assignments yet")
+                            .font(.headline)
+                            .padding()
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(Color.surfaceCard)
+                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                    } else {
+                        ForEach(assessments) { assessment in
+                            assignmentCard(for: assessment)
+                        }
                     }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(.tealMain)
-                    .clipShape(RoundedRectangle(cornerRadius: 30))
-                    
-                    
+
+                    NavigationLink {
+                        AddAssignmentView()
+                    } label: {
+                        Text("+ Add Assignment")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(PillButtonStyle())
+
+                    NavigationLink {
+                        CourseListView()
+                    } label: {
+                        Text("View Course List")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(PillButtonStyle())
                 }
-    }
-}
-
-var mainContent: some View {
-    VStack(alignment: .leading, spacing: 20) {
-        header
-
-        assessmentCard(
-            course: "42904 Cloud Computing",
-            target: "HD",
-            title: "Assessment 2",
-            progress: 0.65,
-            status: "Urgent",
-            statusColor: .redMain,
-            due: "Due Tomorrow"
-        )
-
-        assessmentCard(
-            course: "32541 Project Management",
-            target: "D",
-            title: "Assessment 1",
-            progress: 0.42,
-            status: "Soon",
-            statusColor: .yellowMain,
-            due: "Due in 3 days"
-        )
-
-        Spacer()
-
-        VStack(spacing: 14) {
-            Button("+ Add Assessment") {}
-                .buttonStyle(PillButtonStyle())
-
-            Button("View Course List") {}
-                .buttonStyle(PillButtonStyle())
+                .padding(.horizontal, 24)
+                .padding(.top, 24)
+                .padding(.bottom, 40)
+            }
         }
-        .frame(maxWidth: .infinity)
-
-        Spacer()
+        .navigationBarTitleDisplayMode(.inline)
     }
-    .padding(.horizontal, 24)
-    .padding(.top, 55)
-}
 
-var header: some View {
-    HStack {
-        VStack(alignment: .leading, spacing: 2) {
-            Text("Assessments")
-                .navigationTitle("Assessments")
-                .font(.headline.bold())
-
-            //can change to what semester student's at
-            Text("Semester 3 | 2026")
-                .font(.caption)
-        }
-
-        Spacer()
-
-        Image(systemName: "bell")
-            .padding(6)
-            .background(.white)
-            .clipShape(Circle())
-    }
-    .foregroundStyle(.black)
-    .padding(.bottom, 12)
-}
-
-func assessmentCard(
-    course: String,
-    target: String,
-    title: String,
-    progress: Double,
-    status: String,
-    statusColor: Color,
-    due: String
-) -> some View {
-    VStack(alignment: .leading, spacing: 12) {
+    private var header: some View {
         HStack {
-            Image(systemName: "book.closed.fill")
-                .padding(8)
-                .background(.tealMain)
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(course)
-                    .font(.caption.bold())
-
-                Text("Target: \(target)")
-                    .font(.caption2)
-                    .foregroundStyle(.gray)
-            }
-
-            Spacer()
-
-            Text(target)
-                .font(.caption.bold())
-                .padding(.horizontal, 18)
-                .padding(.vertical, 8)
-                .background(.tealMain)
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-        }
-
-        HStack(alignment: .bottom) {
             VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.caption.bold())
+                Text("Assignments")
+                    .font(.title3.bold())
 
-                ProgressView(value: progress)
-                    .tint(.purpleMain)
-
-                Text("Need 70% more")
-                    .font(.caption2)
-                    .foregroundStyle(.gray)
+                Text("Semester 3 | 2026")
+                    .font(.caption)
             }
 
             Spacer()
 
-            VStack(spacing: 4) {
-                Text(status)
-                    .font(.caption2.bold())
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 6)
-                    .background(statusColor)
-                    .clipShape(Capsule())
+            Image(systemName: "bell")
+                .padding(8)
+                .background(.white)
+                .clipShape(Circle())
+        }
+        .foregroundStyle(.black)
+    }
 
-                Text(due)
-                    .font(.caption2)
-                    .foregroundStyle(.gray)
+    private func assignmentCard(for assessment: Assessment) -> some View {
+        let daysLeft = Calendar.current.dateComponents([.day], from: .now, to: assessment.dueDate).day ?? 0
+        let statusText = daysLeft <= 1 ? "Urgent" : (daysLeft <= 3 ? "Soon" : "On Track")
+        let statusColor: Color = daysLeft <= 1 ? .redMain : (daysLeft <= 3 ? .yellowMain : .tealMain.opacity(0.35))
+        let dueText = daysLeft <= 0 ? "Due Today" : (daysLeft == 1 ? "Due Tomorrow" : "Due in \(daysLeft) days")
+
+        let progressValue: Double = assessment.tasks.isEmpty
+            ? 0.15
+            : Double(assessment.tasks.filter(\.isCompleted).count) / Double(assessment.tasks.count)
+
+        return VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Image(systemName: "book.closed.fill")
+                    .padding(8)
+                    .background(.tealMain)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(assessment.subject?.name ?? "No Course")
+                        .font(.caption.bold())
+
+                    Text("Target: \(assessment.subject?.targetGrade.rawValue ?? "--")")
+                        .font(.caption2)
+                        .foregroundStyle(.gray)
+                }
+
+                Spacer()
+
+                Text(assessment.subject?.targetGrade.rawValue ?? "--")
+                    .font(.caption.bold())
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 8)
+                    .background(.tealMain)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+            }
+
+            HStack(alignment: .bottom) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(assessment.title)
+                        .font(.subheadline.bold())
+
+                    ProgressView(value: progressValue)
+                        .tint(.purpleMain)
+
+                    Text("Need \(Int((1 - progressValue) * 100))% more")
+                        .font(.caption2)
+                        .foregroundStyle(.gray)
+                }
+
+                Spacer()
+
+                VStack(spacing: 4) {
+                    Text(statusText)
+                        .font(.caption2.bold())
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(statusColor)
+                        .clipShape(Capsule())
+
+                    Text(dueText)
+                        .font(.caption2)
+                        .foregroundStyle(.gray)
+                }
             }
         }
+        .padding(14)
+        .background(Color.surfaceCard)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
     }
-    .padding(12)
-    .background(Color(red: 0.88, green: 0.94, blue: 0.98))
-    .clipShape(RoundedRectangle(cornerRadius: 14))
 }
-
-var bottomTabBar: some View {
-    HStack(spacing: 40) {
-        Image(systemName: "house")
-        Image(systemName: "calendar")
-        Image(systemName: "doc.text.fill")
-            .padding(14)
-            .background(.tealMain)
-            .clipShape(Circle())
-        Image(systemName: "briefcase.fill")
-        Image(systemName: "person")
-    }
-    .font(.title3)
-    .padding(.top, 16)
-    .padding(.bottom, 24)
-    .frame(maxWidth: .infinity)
-    .background(Color(red: 0.86, green: 0.98, blue: 0.88))
-    .clipShape(
-        UnevenRoundedRectangle(
-            topLeadingRadius: 32,
-            topTrailingRadius: 32
-        )
-    )
-}
-
 
 struct PillButtonStyle: ButtonStyle {
-func makeBody(configuration: Configuration) -> some View {
-    configuration.label
-        .font(.headline.bold())
-        .foregroundStyle(.tealMain)
-        .padding(.horizontal, 24)
-        .padding(.vertical, 12)
-        .background(.tealDark)
-        .clipShape(Capsule())
-        .scaleEffect(configuration.isPressed ? 0.96 : 1)
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.headline.bold())
+            .foregroundStyle(.tealMain)
+            .padding(.horizontal, 24)
+            .padding(.vertical, 14)
+            .background(.tealDark)
+            .clipShape(Capsule())
+            .scaleEffect(configuration.isPressed ? 0.97 : 1)
+    }
 }
-}
+
 
 #Preview {
     AssignmentsView()

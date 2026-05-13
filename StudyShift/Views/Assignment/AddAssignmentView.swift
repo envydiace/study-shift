@@ -19,34 +19,35 @@ struct AddAssignmentView: View {
     @State private var selectedTargetGrade: GradeTarget = .highDistinction
     @State private var weightText = ""
     @State private var wordLimitText = ""
-    @State private var taskDraft = ""
-    @State private var taskTitles: [String] = []
-    @State private var showError = false
-    @State private var errorMessage = ""
+    @State private var taskText = ""
+    @State private var taskList: [String] = []
+
+    @State private var showAlert = false
+    @State private var alertMessage = ""
 
     var body: some View {
         ZStack {
             Color.tealMain
                 .ignoresSafeArea()
 
-            ScrollView(showsIndicators: false) {
+            ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
                     header
 
-                    fieldSection("Assignment Title") {
+                    inputSection(title: "Assignment Title") {
                         TextField("Assignment 1", text: $title)
                     }
 
-                    fieldSection("Deadline") {
+                    inputSection(title: "Deadline") {
                         DatePicker("", selection: $dueDate, displayedComponents: .date)
                             .labelsHidden()
                     }
 
-                    fieldSection("Course") {
+                    inputSection(title: "Course") {
                         if subjects.isEmpty {
-                            Text("Add a subject first to link this assignment to a course.")
+                            Text("Add a subject first before creating an assignment.")
+                                .foregroundStyle(.gray)
                                 .font(.subheadline)
-                                .foregroundStyle(.secondary)
                         } else {
                             Picker("Course", selection: $selectedSubjectID) {
                                 Text("Select a course").tag(Optional<UUID>.none)
@@ -58,7 +59,7 @@ struct AddAssignmentView: View {
                         }
                     }
 
-                    fieldSection("Target Grade") {
+                    inputSection(title: "Target Grade") {
                         Picker("Target Grade", selection: $selectedTargetGrade) {
                             ForEach(GradeTarget.allCases, id: \.self) { grade in
                                 Text(grade.rawValue).tag(grade)
@@ -67,20 +68,20 @@ struct AddAssignmentView: View {
                         .pickerStyle(.segmented)
                     }
 
-                    fieldSection("Weight (%)") {
+                    inputSection(title: "Weight (%)") {
                         TextField("40", text: $weightText)
                             .keyboardType(.decimalPad)
                     }
 
-                    fieldSection("Word Limit") {
+                    inputSection(title: "Word Limit") {
                         TextField("1000", text: $wordLimitText)
                             .keyboardType(.numberPad)
                     }
 
-                    fieldSection("Sub Tasks / To Do") {
+                    inputSection(title: "Sub Tasks / To Do") {
                         VStack(spacing: 10) {
                             HStack {
-                                TextField("Add a task", text: $taskDraft)
+                                TextField("Task 1", text: $taskText)
 
                                 Button {
                                     addTask()
@@ -91,15 +92,11 @@ struct AddAssignmentView: View {
                                 }
                             }
 
-                            if !taskTitles.isEmpty {
+                            if !taskList.isEmpty {
                                 VStack(alignment: .leading, spacing: 8) {
-                                    ForEach(taskTitles, id: \.self) { task in
-                                        HStack {
-                                            Image(systemName: "checkmark.square")
-                                                .foregroundStyle(.tealDark)
-                                            Text(task)
-                                                .font(.subheadline)
-                                        }
+                                    ForEach(taskList, id: \.self) { task in
+                                        Text("• \(task)")
+                                            .font(.subheadline)
                                     }
                                 }
                                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -113,19 +110,19 @@ struct AddAssignmentView: View {
                         Text("+ Add Assignment")
                             .frame(maxWidth: .infinity)
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(PillButtonStyle())
                     .padding(.top, 8)
                 }
                 .padding(.horizontal, 24)
-                .padding(.top, 55)
+                .padding(.top, 24)
                 .padding(.bottom, 40)
             }
         }
-        .toolbar(.hidden, for: .navigationBar)
-        .alert("Could not save", isPresented: $showError) {
+        .navigationBarTitleDisplayMode(.inline)
+        .alert("Add Assignment", isPresented: $showAlert) {
             Button("OK", role: .cancel) { }
         } message: {
-            Text(errorMessage)
+            Text(alertMessage)
         }
         .onAppear {
             if let firstSubject = subjects.first {
@@ -135,14 +132,9 @@ struct AddAssignmentView: View {
         }
         .onChange(of: selectedSubjectID) { _, newValue in
             guard let newValue,
-                  let subject = subjects.first(where: { $0.id == newValue }) else { return }
-            selectedTargetGrade = subject.targetGrade
+                  let selected = subjects.first(where: { $0.id == newValue }) else { return }
+            selectedTargetGrade = selected.targetGrade
         }
-    }
-
-    private var selectedSubject: Subject? {
-        guard let selectedSubjectID else { return nil }
-        return subjects.first(where: { $0.id == selectedSubjectID })
     }
 
     private var header: some View {
@@ -158,19 +150,17 @@ struct AddAssignmentView: View {
             Spacer()
 
             Image(systemName: "bell")
-                .foregroundStyle(.black)
                 .padding(8)
-                .background(Color.white)
+                .background(.white)
                 .clipShape(Circle())
         }
         .foregroundStyle(.black)
     }
 
-    private func fieldSection<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
+    private func inputSection<Content: View>(title: String, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(title)
                 .font(.caption.bold())
-                .foregroundStyle(.black)
 
             content()
                 .padding(.horizontal, 14)
@@ -182,30 +172,35 @@ struct AddAssignmentView: View {
     }
 
     private func addTask() {
-        let trimmed = taskDraft.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmed = taskText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
-        taskTitles.append(trimmed)
-        taskDraft = ""
+        taskList.append(trimmed)
+        taskText = ""
     }
 
     private func saveAssignment() {
         let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmedTitle.isEmpty else {
-            presentError("Please enter an assignment title.")
+
+        if trimmedTitle.isEmpty {
+            alertMessage = "Please enter an assignment title."
+            showAlert = true
             return
         }
 
         guard let weight = Double(weightText), weight >= 0 else {
-            presentError("Please enter a valid weight.")
+            alertMessage = "Please enter a valid weight."
+            showAlert = true
             return
         }
+
+        let selectedSubject = subjects.first(where: { $0.id == selectedSubjectID })
 
         let note = """
         Target Grade: \(selectedTargetGrade.rawValue)
         Word Limit: \(wordLimitText.isEmpty ? "-" : wordLimitText)
         """
 
-        let assignment = Assessment(
+        let newAssignment = Assessment(
             title: trimmedTitle,
             assessmentType: .assignment,
             dueDate: dueDate,
@@ -215,32 +210,29 @@ struct AddAssignmentView: View {
             subject: selectedSubject
         )
 
-        modelContext.insert(assignment)
+        modelContext.insert(newAssignment)
 
-        for taskTitle in taskTitles {
+        for item in taskList {
             let task = TodoTask(
-                title: taskTitle,
+                title: item,
                 dueDate: dueDate,
                 subject: selectedSubject,
-                assessment: assignment
+                assessment: newAssignment
             )
             modelContext.insert(task)
-            assignment.tasks.append(task)
+            newAssignment.tasks.append(task)
         }
 
         do {
             try modelContext.save()
             dismiss()
         } catch {
-            presentError("Failed to save assignment.")
+            alertMessage = "Failed to save assignment."
+            showAlert = true
         }
     }
-
-    private func presentError(_ message: String) {
-        errorMessage = message
-        showError = true
-    }
 }
+
 
 #Preview {
     AddAssignmentView()
