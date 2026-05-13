@@ -25,103 +25,112 @@ struct AddAssignmentView: View {
     @State private var errorMessage = ""
 
     var body: some View {
-        ZStack {
-            Color.tealMain
-                .ignoresSafeArea()
+        NavigationStack {
+            ZStack {
+                Color.tealMain
+                    .ignoresSafeArea()
 
-            ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 18) {
-                    header
-
-                    fieldSection("Assignment Title") {
-                        TextField("Assignment 1", text: $title)
-                    }
-
-                    fieldSection("Deadline") {
-                        DatePicker("", selection: $dueDate, displayedComponents: .date)
-                            .labelsHidden()
-                    }
-
-                    fieldSection("Course") {
-                        if courses.isEmpty {
-                            Text("Add a course first to link this assignment to a course.")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                        } else {
-                            Picker("Course", selection: $selectedCourseID) {
-                                Text("Select a course").tag(Optional<UUID>.none)
-                                ForEach(courses) { course in
-                                    Text(course.name).tag(Optional(course.id))
-                                }
-                            }
-                            .pickerStyle(.menu)
+                ScrollView(showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: 18) {
+                        
+                        fieldSection("Assignment Title") {
+                            TextField("Assignment 1", text: $title)
                         }
-                    }
 
-                    fieldSection("Target Grade") {
-                        Picker("Target Grade", selection: $selectedTargetGrade) {
-                            ForEach(GradeTarget.allCases, id: \.self) { grade in
-                                Text(grade.rawValue).tag(grade)
-                            }
+                        fieldSection("Deadline") {
+                            DatePicker("", selection: $dueDate, displayedComponents: .date)
+                                .labelsHidden()
                         }
-                        .pickerStyle(.segmented)
-                    }
 
-                    fieldSection("Weight (%)") {
-                        TextField("40", text: $weightText)
-                            .keyboardType(.decimalPad)
-                    }
-
-                    fieldSection("Word Limit") {
-                        TextField("1000", text: $wordLimitText)
-                            .keyboardType(.numberPad)
-                    }
-
-                    fieldSection("Sub Tasks / To Do") {
-                        VStack(spacing: 10) {
-                            HStack {
-                                TextField("Add a task", text: $taskDraft)
-
-                                Button {
-                                    addTask()
-                                } label: {
-                                    Image(systemName: "plus.circle.fill")
-                                        .font(.title3)
-                                        .foregroundStyle(.tealDark)
-                                }
-                            }
-
-                            if !taskTitles.isEmpty {
-                                VStack(alignment: .leading, spacing: 8) {
-                                    ForEach(taskTitles, id: \.self) { task in
-                                        HStack {
-                                            Image(systemName: "checkmark.square")
-                                                .foregroundStyle(.tealDark)
-                                            Text(task)
-                                                .font(.subheadline)
-                                        }
+                        fieldSection("Course") {
+                            if courses.isEmpty {
+                                Text("Add a course first to link this assignment to a course.")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                            } else {
+                                Picker("Course", selection: $selectedCourseID) {
+                                    Text("Select a course").tag(Optional<UUID>.none)
+                                    ForEach(courses) { course in
+                                        Text(course.name).tag(Optional(course.id))
                                     }
                                 }
-                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .pickerStyle(.menu)
                             }
                         }
-                    }
 
-                    Button {
-                        saveAssignment()
-                    } label: {
-                        Text("+ Add Assignment")
-                            .frame(maxWidth: .infinity)
+                        fieldSection("Target Grade") {
+                            Picker("Target Grade", selection: $selectedTargetGrade) {
+                                ForEach(GradeTarget.allCases, id: \.self) { grade in
+                                    Text(grade.rawValue).tag(grade)
+                                }
+                            }
+                            .pickerStyle(.segmented)
+                        }
+
+                        fieldSection("Weight (%)") {
+                            TextField("40", text: $weightText)
+                                .keyboardType(.decimalPad)
+                        }
+
+                        fieldSection("Word Limit") {
+                            TextField("1000", text: $wordLimitText)
+                                .keyboardType(.numberPad)
+                        }
+
+                        fieldSection("Sub Tasks / To Do") {
+                            VStack(spacing: 10) {
+                                HStack {
+                                    TextField("Add a task", text: $taskDraft)
+
+                                    Button {
+                                        addTask()
+                                    } label: {
+                                        Image(systemName: "plus.circle.fill")
+                                            .font(.title3)
+                                            .foregroundStyle(.tealDark)
+                                    }
+                                }
+
+                                if !taskTitles.isEmpty {
+                                    VStack(alignment: .leading, spacing: 8) {
+                                        ForEach(taskTitles, id: \.self) { task in
+                                            HStack {
+                                                Image(systemName: "checkmark.square")
+                                                    .foregroundStyle(.tealDark)
+                                                Text(task)
+                                                    .font(.subheadline)
+                                            }
+                                        }
+                                    }
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                }
+                            }
+                        }
+
+                        Button {
+                            saveAssignment()
+                        } label: {
+                            Text("+ Add Assignment")
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.top, 8)
                     }
-                    .buttonStyle(.plain)
-                    .padding(.top, 8)
+                    .padding(.horizontal, 24)
+                    .padding(.top, 20)
+                    .padding(.bottom, 40)
                 }
-                .padding(.horizontal, 24)
-                .padding(.top, 55)
-                .padding(.bottom, 40)
+            }
+            .navigationTitle("Add Assignment")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
             }
         }
-        .toolbar(.hidden, for: .navigationBar)
         .alert("Could not save", isPresented: $showError) {
             Button("OK", role: .cancel) { }
         } message: {
@@ -244,5 +253,5 @@ struct AddAssignmentView: View {
 
 #Preview {
     AddAssignmentView()
+        .modelContainer(ModelContainerFactory.createPreviewContainer())
 }
-

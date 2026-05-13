@@ -86,6 +86,7 @@ struct CalendarView: View {
                     }
             )
         }
+        .background(Color.tealMain)
         .sheet(isPresented: $viewModel.isShowingMonthPicker) {
             MonthPickerView(
                 selectedDate: viewModel.selectedDate

@@ -295,6 +295,7 @@ struct DebugDataView: View {
                 "workplace",
                 "startTime",
                 "endTime",
+                "colorHex",
                 "totalHours",
                 "note"
             ],
@@ -305,6 +306,7 @@ struct DebugDataView: View {
                     shift.workplace,
                     formatDate(shift.startTime),
                     formatDate(shift.endTime),
+                    shift.colorHex,
                     formatDouble(shift.totalHours),
                     shift.note
                 ]
@@ -321,6 +323,7 @@ struct DebugDataView: View {
                 "location",
                 "startTime",
                 "endTime",
+                "colorHex",
                 "courseId",
                 "courseName"
             ],
@@ -331,6 +334,7 @@ struct DebugDataView: View {
                     session.location ?? "",
                     formatDate(session.startTime),
                     formatDate(session.endTime),
+                    session.colorHex,
                     session.course?.id.uuidString ?? "",
                     session.course?.name ?? ""
                 ]

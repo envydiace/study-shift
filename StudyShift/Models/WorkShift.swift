@@ -15,6 +15,7 @@ final class WorkShift: UUIDIdentifiableModel {
     var workplace: String
     var startTime: Date
     var endTime: Date
+    var colorHex: String
     var note: String
 
     init(
@@ -23,6 +24,7 @@ final class WorkShift: UUIDIdentifiableModel {
         workplace: String = "",
         startTime: Date,
         endTime: Date,
+        colorHex: String = EventColorOption.defaultColor.hex,
         note: String = ""
     ) {
         self.id = id
@@ -30,6 +32,7 @@ final class WorkShift: UUIDIdentifiableModel {
         self.workplace = workplace
         self.startTime = startTime
         self.endTime = endTime
+        self.colorHex = colorHex
         self.note = note
     }
 

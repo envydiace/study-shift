@@ -83,6 +83,24 @@ struct ClassSessionRepository: RepositoryProtocol {
         )
         return try fetch(with: descriptor).first
     }
+    
+    func fetchUpcomingClasses(
+            from date: Date = Date(),
+            limit: Int = 2
+        ) throws -> [ClassSession] {
+        let descriptor = FetchDescriptor<ClassSession>(
+            predicate: #Predicate { classSession in
+                classSession.startTime > date
+            },
+            sortBy: [
+                SortDescriptor(\.startTime, order: .forward)
+            ]
+        )
+
+        let result = try fetch(with: descriptor)
+
+        return Array(result.prefix(limit))
+    }
 }
 
 struct WorkShiftRepository: RepositoryProtocol {
@@ -96,6 +114,22 @@ struct WorkShiftRepository: RepositoryProtocol {
         )
         return try fetch(with: descriptor)
     }
+    
+    func fetchShifts(
+            from startDate: Date,
+            to endDate: Date
+        ) throws -> [WorkShift] {
+            let descriptor = FetchDescriptor<WorkShift>(
+                predicate: #Predicate { shift in
+                    shift.startTime >= startDate && shift.startTime < endDate
+                },
+                sortBy: [
+                    SortDescriptor(\.startTime, order: .forward)
+                ]
+            )
+
+            return try fetch(with: descriptor)
+        }
 }
 
 struct PersonalEventRepository: RepositoryProtocol {

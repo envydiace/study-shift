@@ -19,13 +19,13 @@ struct TimeGridView: View {
                     // Time label
                     Text(String(format: "%02d:00", hour))
                         .font(.caption2)
-                        .foregroundColor(.gray)
+                        .foregroundColor(.black)
                         .frame(width: 50, alignment: .trailing)
                         .padding(.trailing, 4)
                     
                     // Horizontal line
                     Rectangle()
-                        .fill(Color.gray.opacity(0.3))
+                        .fill(Color.black.opacity(0.3))
                         .frame(height: 1)
                 }
                 .frame(height: hourHeight)

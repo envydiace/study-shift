@@ -13,4 +13,10 @@ struct DateFormatHelper {
         formatter.dateFormat = "HH:mm"
         return formatter.string(from: date)
     }
+    
+    static func formatDay(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEEE"
+        return formatter.string(from: date)
+    }
 }

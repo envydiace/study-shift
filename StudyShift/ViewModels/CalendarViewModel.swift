@@ -215,7 +215,7 @@ final class CalendarViewModel: ObservableObject {
                 title: $0.title,
                 start: $0.startTime,
                 end: $0.endTime,
-                color: .blue,
+                color: Color(hex: $0.colorHex),
                 type: .classSession
             )
         }
@@ -226,7 +226,7 @@ final class CalendarViewModel: ObservableObject {
                 title: $0.workplace.isEmpty ? $0.title : $0.workplace,
                 start: $0.startTime,
                 end: $0.endTime,
-                color: .orange,
+                color: Color(hex: $0.colorHex),
                 type: .workShift
             )
         }
@@ -257,7 +257,7 @@ final class CalendarViewModel: ObservableObject {
                 title: personalEvent.title,
                 start: start,
                 end: end,
-                color: .red,
+                color: Color(hex: personalEvent.colorHex),
                 type: .personal
             )
         }
