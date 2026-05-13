@@ -41,6 +41,40 @@ struct AssignmentRepository: RepositoryProtocol {
         )
         return try fetch(with: descriptor)
     }
+    
+    func fetchAssignmentsInProgress(
+            from date: Date = Date(),
+            limit: Int = 5
+        ) throws -> [Assignment] {
+            let descriptor = FetchDescriptor<Assignment>(
+                predicate: #Predicate { assignment in
+                    assignment.dueDate >= date
+                },
+                sortBy: [
+                    SortDescriptor(\.dueDate, order: .forward)
+                ]
+            )
+
+            let result = try fetch(with: descriptor)
+            return Array(result.prefix(limit))
+        }
+
+        func fetchUpcomingDeadlines(
+            from date: Date = Date(),
+            limit: Int = 2
+        ) throws -> [Assignment] {
+            let descriptor = FetchDescriptor<Assignment>(
+                predicate: #Predicate { assignment in
+                    assignment.dueDate >= date
+                },
+                sortBy: [
+                    SortDescriptor(\.dueDate, order: .forward)
+                ]
+            )
+
+            let result = try fetch(with: descriptor)
+            return Array(result.prefix(limit))
+        }
 }
 
 struct TodoTaskRepository: RepositoryProtocol {

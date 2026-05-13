@@ -121,14 +121,6 @@ struct AddAssignmentView: View {
                 .pickerStyle(.menu)
             }
             
-            inputSection(title: "Target Grade") {
-                Picker("Target Grade", selection: $selectedTargetGrade) {
-                    ForEach(GradeTarget.allCases, id: \.self) { grade in
-                        Text(grade.rawValue).tag(grade)
-                    }
-                }
-            }
-            
             inputSection(title: "Weight (%)") {
                 TextField("40", text: $weightText)
                     .keyboardType(.decimalPad)

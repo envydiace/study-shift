@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct DashboardAssessmentItem: Identifiable {
+struct DashboardAssignmentItem: Identifiable {
     let id = UUID()
     let subjectCode: String
     let subjectName: String

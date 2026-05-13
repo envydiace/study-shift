@@ -7,8 +7,8 @@
 
 import SwiftUI
 
-struct AssessmentCard: View {
-    let item: DashboardAssessmentItem
+struct AssignmentCard: View {
+    let item: DashboardAssignmentItem
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {

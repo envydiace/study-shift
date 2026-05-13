@@ -20,7 +20,7 @@ struct DashboardView: View {
             VStack(alignment: .leading, spacing: 18) {
                 headerSection
                 shiftSummaryCard
-                sectionHeader(title: "Assessments In Progress", count: viewModel.assessments.count)
+                sectionHeader(title: "Assignments In Progress", count: viewModel.dashboardAssignments.count)
                 assessmentSection
                 sectionHeader(title: "Upcoming Classes", count: viewModel.upcomingClasses.count)
                 classesSection
@@ -34,8 +34,7 @@ struct DashboardView: View {
         .background(screenBackground.ignoresSafeArea())
         .task {
             viewModel.configure(context: modelContext)
-            viewModel.loadShiftSummary()
-            viewModel.loadUpcomingClasses()
+            viewModel.loadDashboardData()
         }
     }
 
@@ -132,22 +131,42 @@ struct DashboardView: View {
     // MARK: - Assessments
 
     var assessmentSection: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 14) {
-                ForEach(viewModel.assessments) { item in
-                    AssessmentCard(item: item)
+        VStack {
+            if viewModel.dashboardAssignments.isEmpty {
+                DashboardEmptyStateCard(
+                   icon: "doc.text",
+                   title: "No assignments yet",
+                   message: "Add assignments to track your progress here."
+               )
+            } else {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 14) {
+                        ForEach(viewModel.dashboardAssignments) { item in
+                            AssignmentCard(item: item)
+                        }
+                    }
+                    .padding(.trailing, 8)
                 }
             }
-            .padding(.trailing, 8)
         }
     }
 
     // MARK: - Classes
 
     var classesSection: some View {
-        VStack(spacing: 12) {
-            ForEach(viewModel.upcomingClasses) { item in
-                ClassRowCard(item: item)
+        VStack {
+            if viewModel.upcomingClasses.isEmpty {
+                DashboardEmptyStateCard(
+                    icon: "calendar",
+                    title: "No upcoming classes",
+                    message: "Your next classes will appear here after you add or import a timetable."
+                )
+            } else {
+                VStack(spacing: 12) {
+                    ForEach(viewModel.upcomingClasses) { item in
+                        ClassRowCard(item: item)
+                    }
+                }
             }
         }
     }
@@ -155,9 +174,19 @@ struct DashboardView: View {
     // MARK: - Deadlines
 
     var deadlinesSection: some View {
-        VStack(spacing: 12) {
-            ForEach(viewModel.upcomingDeadlines) { item in
-                DeadlineRowCard(item: item)
+        VStack {
+            if viewModel.upcomingDeadlines.isEmpty {
+                DashboardEmptyStateCard(
+                    icon: "clock.badge.exclamationmark",
+                    title: "No upcoming deadlines",
+                    message: "Assignment deadlines will appear here when they are added."
+                )
+            } else {
+                VStack(spacing: 12) {
+                    ForEach(viewModel.upcomingDeadlines) { item in
+                        DeadlineRowCard(item: item)
+                    }
+                }
             }
         }
     }
