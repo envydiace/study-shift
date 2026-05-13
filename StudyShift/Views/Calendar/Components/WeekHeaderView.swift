@@ -17,7 +17,7 @@ struct WeekHeaderView: View {
                 VStack {
                     Text(dayOfWeek(from: date))
                         .font(.caption)
-                        .foregroundColor(.gray)
+                        .foregroundColor(.black)
 
                     Text(dayNumber(from: date))
                         .font(.headline)
@@ -26,14 +26,13 @@ struct WeekHeaderView: View {
                         .frame(width: 34, height: 34)
                         .background(
                             Circle()
-                                .fill(isToday(date) ? Color.blue : Color.clear)
+                                .fill(isToday(date) ? Color.tealDark : Color.clear)
                         )
                 }
                 .frame(maxWidth: .infinity)
             }
         }
         .padding(.vertical, 6)
-        .background(Color(.systemGray6))
     }
     
     private func isToday(_ date: Date) -> Bool {

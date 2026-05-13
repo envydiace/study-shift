@@ -21,6 +21,7 @@ struct CalendarTopBar: View {
                 onPreviousWeek()
             } label: {
                 Image(systemName: "chevron.left")
+                    .foregroundColor(.tealDark)
             }
 
             Spacer()
@@ -36,7 +37,7 @@ struct CalendarTopBar: View {
                     Image(systemName: "chevron.down")
                         .font(.caption)
                 }
-                .foregroundColor(.primary)
+                .foregroundColor(.tealDark)
             }
 
             Spacer()
@@ -45,17 +46,22 @@ struct CalendarTopBar: View {
                 onNextWeek()
             } label: {
                 Image(systemName: "chevron.right")
+                    .foregroundColor(.tealDark)
             }
 
             Button("Today") {
                 onToday()
             }
+            .fontWeight(.semibold)
+            .foregroundColor(.tealDark)
             
             Button {
                 onAddEvent()
             } label: {
                 Image(systemName: "plus.circle.fill")
                     .font(.title3)
+                    .foregroundColor(.tealDark)
+                
             }
         }
         .padding(.horizontal)
@@ -63,6 +69,17 @@ struct CalendarTopBar: View {
     }
 }
 
-//#Preview {
-//    CalendarTopBar()
-//}
+#Preview {
+    CalendarTopBar(title: "Apirl", onPreviousWeek: {
+        
+    }) {
+        
+    } onToday: {
+        
+    } onTitleTap: {
+        
+    } onAddEvent: {
+        
+    }
+
+}
