@@ -96,11 +96,11 @@ struct WorkShiftView: View {
 
             Spacer()
 
-            Image(systemName: "bell")
-                .foregroundStyle(.black)
-                .padding(8)
-                .background(Color.white)
-                .clipShape(Circle())
+//            Image(systemName: "bell")
+//                .foregroundStyle(.black)
+//                .padding(8)
+//                .background(Color.white)
+//                .clipShape(Circle())
         }
     }
 

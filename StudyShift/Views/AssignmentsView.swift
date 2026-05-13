@@ -9,8 +9,8 @@ import SwiftUI
 import SwiftData
 
 struct AssignmentsView: View {
-    @Query(sort: \Assessment.dueDate)
-    private var assignments: [Assessment]
+    @Query(sort: \Assignment.dueDate)
+    private var assignments: [Assignment]
 
     @State var isShowAddAssignment: Bool = false
     
@@ -27,13 +27,13 @@ struct AssignmentsView: View {
                         emptyState
                     } else {
                         ForEach(assignments) { assignment in
-                            AssignmentCardView(assessment: assignment)
+                            AssignmentCardView(assignment: assignment)
                         }
                     }
 
                     VStack(spacing: 14) {
-                        NavigationLink {
-                            AddAssignmentView()
+                        Button {
+                            showAddAssignment()
                         } label: {
                             Text("+ Add Assignment")
                         }
@@ -55,24 +55,28 @@ struct AssignmentsView: View {
             }
         }
         .toolbar(.hidden, for: .navigationBar)
+        .sheet(isPresented: $isShowAddAssignment) {
+            AddAssignmentView()
+        }
     }
 
     private var header: some View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Assignments")
-                    .font(.headline.bold())
+                    .font(.title2.bold())
+                    .foregroundStyle(.black)
 
-                Text("Semester 3 | 2026")
-                    .font(.caption)
+//                Text("Semester 3 | 2026")
+//                    .font(.caption)
             }
 
             Spacer()
 
-            Image(systemName: "bell")
-                .padding(6)
-                .background(.white)
-                .clipShape(Circle())
+//            Image(systemName: "bell")
+//                .padding(6)
+//                .background(.white)
+//                .clipShape(Circle())
         }
         .foregroundStyle(.black)
         .padding(.bottom, 12)
@@ -117,4 +121,5 @@ struct PillButtonStyle: ButtonStyle {
 
 #Preview {
     AssignmentsView()
+        .modelContainer(ModelContainerFactory.createPreviewContainer())
 }
