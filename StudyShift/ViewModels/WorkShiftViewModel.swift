@@ -10,7 +10,6 @@ import SwiftData
 import SwiftUI
 import Combine
 
-@MainActor
 final class WorkShiftViewModel: ObservableObject {
     @Published var shifts: [WorkShift] = []
 
