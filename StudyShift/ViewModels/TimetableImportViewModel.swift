@@ -8,13 +8,25 @@
 import Foundation
 import Combine
 import SwiftData
+import SwiftUI
 
 final class TimetableImportViewModel: ObservableObject {
     @Published var urlText: String = ""
     @Published var errorMessage: String = ""
     @Published var successMessage: String = ""
     @Published var isImporting: Bool = false
-
+    
+    @Published var isShowingColorDropdown: Bool = false
+    @Published var selectedColorHex: String = EventColorOption.defaultColor.hex
+    var selectedColorOption: EventColorOption {
+        EventColorOption.options.first { $0.hex == selectedColorHex }
+        ?? EventColorOption.defaultColor
+    }
+    
+    var canImport: Bool {
+        !urlText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+    
     private let service = TimetableImportService()
     private var classSessionRepository: ClassSessionRepository?
     private var courseRepository: CourseRepository?
@@ -96,6 +108,7 @@ final class TimetableImportViewModel: ObservableObject {
                     location: event.location,
                     startTime: event.startDate,
                     endTime: event.endDate,
+                    colorHex: selectedColorHex,
                     externalEventId: event.uid,
                     sourceURL: trimmedURL,
                     course: course

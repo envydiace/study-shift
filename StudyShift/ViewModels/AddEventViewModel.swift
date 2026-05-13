@@ -8,6 +8,7 @@
 import Foundation
 import Combine
 import SwiftData
+import SwiftUI
 
 final class AddEventViewModel: ObservableObject {
     @Published var eventType: EventType
@@ -16,7 +17,19 @@ final class AddEventViewModel: ObservableObject {
 
     @Published var startDate: Date? = Date()
     @Published var endDate: Date? = Calendar.current.date(byAdding: .hour, value: 1, to: Date())
-
+    
+    @Published var isShowingColorDropdown = false
+    @Published var selectedColorHex: String = EventColorOption.defaultColor.hex
+    var selectedColorOption: EventColorOption {
+        EventColorOption.options.first { $0.hex == selectedColorHex }
+        ?? EventColorOption.defaultColor
+    }
+    
+    @Published var notificationEnabled: Bool = false
+    @Published var reminderMinutesBefore: Int = 30
+    private var notificationId: String? = nil
+    let reminderOptions = [5, 10, 15, 30, 60, 120]
+    
     @Published var location: String = ""
     @Published var notes: String = ""
 
@@ -29,12 +42,6 @@ final class AddEventViewModel: ObservableObject {
 
     @Published var didSaveSuccessfully: Bool = false
     @Published var errorMessage: String?
-    
-    @Published var notificationEnabled: Bool = false
-    @Published var reminderMinutesBefore: Int = 30
-    private var notificationId: String? = nil
-
-    let reminderOptions = [5, 10, 15, 30, 60, 120]
     
     private var courseRepository: CourseRepository?
     private var classSessionReposiitory: ClassSessionRepository?
@@ -197,6 +204,7 @@ final class AddEventViewModel: ObservableObject {
             endDate: endDate,
             location: emptyToNil(location),
             notes: emptyToNil(notes),
+            colorHex: selectedColorHex,
             notificationEnabled: notificationEnabled,
             reminderMinutesBefore: notificationEnabled ? reminderMinutesBefore : nil,
             notificationId: notificationId
@@ -214,6 +222,7 @@ final class AddEventViewModel: ObservableObject {
             location: emptyToNil(location),
             startTime: startDate,
             endTime: endDate,
+            colorHex: selectedColorHex,
             course: course
         )
 
@@ -228,6 +237,7 @@ final class AddEventViewModel: ObservableObject {
             workplace: emptyToNil(workplace) ?? "",
             startTime: startDate,
             endTime: endDate,
+            colorHex: selectedColorHex,
             note: emptyToNil(notes) ?? ""
         )
 

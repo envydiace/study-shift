@@ -13,7 +13,6 @@ struct AddEventView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel: AddEventViewModel
     private let onSave: (() -> Void)?
-
     init(
         eventType: EventType = .personal,
         onSave: (() -> Void)? = nil
@@ -29,6 +28,8 @@ struct AddEventView: View {
                     titleSection
                     
                     dateSection
+                    
+                    colorSection
 
                     notificationSection
                     
@@ -110,6 +111,16 @@ struct AddEventView: View {
                 .font(.headline)
             }
         }
+    }
+    
+    private var colorSection: some View {
+        sectionCard {
+            EventColorPickerSection(
+                selectedColorHex: $viewModel.selectedColorHex,
+                isShowingDropdown: $viewModel.isShowingColorDropdown
+            )
+        }
+        
     }
     
     private var notificationSection: some View {

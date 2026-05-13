@@ -15,6 +15,7 @@ final class ClassSession: UUIDIdentifiableModel {
     var location: String?
     var startTime: Date
     var endTime: Date
+    var colorHex: String
 
     var externalEventId: String?
     var sourceURL: String?
@@ -27,6 +28,7 @@ final class ClassSession: UUIDIdentifiableModel {
         location: String?,
         startTime: Date,
         endTime: Date,
+        colorHex: String,
         externalEventId: String? = nil,
         sourceURL: String? = nil,
         course: Course? = nil
@@ -36,6 +38,7 @@ final class ClassSession: UUIDIdentifiableModel {
         self.location = location
         self.startTime = startTime
         self.endTime = endTime
+        self.colorHex = colorHex
         self.externalEventId = externalEventId
         self.sourceURL = sourceURL
         self.course = course

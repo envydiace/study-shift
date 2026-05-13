@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftData
+import SwiftUI
 
 @Model
 final class PersonalEvent: UUIDIdentifiableModel {
@@ -16,6 +17,7 @@ final class PersonalEvent: UUIDIdentifiableModel {
     var endDate: Date?
     var location: String?
     var notes: String?
+    var colorHex: String
     
     var notificationEnabled: Bool
     var reminderMinutesBefore: Int?
@@ -28,6 +30,7 @@ final class PersonalEvent: UUIDIdentifiableModel {
         endDate: Date? = nil,
         location: String? = nil,
         notes: String? = nil,
+        colorHex: String,
         notificationEnabled: Bool = false,
         reminderMinutesBefore: Int? = nil,
         notificationId: String? = nil
@@ -38,6 +41,7 @@ final class PersonalEvent: UUIDIdentifiableModel {
         self.endDate = endDate
         self.location = location
         self.notes = notes
+        self.colorHex = colorHex
         self.notificationEnabled = notificationEnabled
         self.reminderMinutesBefore = reminderMinutesBefore
         self.notificationId = notificationId
