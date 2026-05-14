@@ -55,23 +55,25 @@ struct CourseDetailView: View {
                 .font(.title.bold())
                 .foregroundStyle(.black)
 
-            overallGradeCard
+            overallGradeCard2
+            
+//            overallGradeCard
 
             VStack(alignment: .leading, spacing: 14) {
-                Text("Graded Assessments")
+                Text("Graded Assignments")
                     .font(.title3.bold())
                     .foregroundStyle(.black)
 
-                if gradedAssessments.isEmpty {
-                    sectionEmptyState("No graded assessments yet")
+                if gradedAssignments.isEmpty {
+                    sectionEmptyState("No graded assignments yet")
                 } else {
-                    ForEach(gradedAssessments) { assessment in
+                    ForEach(gradedAssignments) { assignment in
                         NavigationLink {
-                            AssignmentDetailView(assignment: assessment)
+                            AssignmentDetailView(assignment: assignment)
                         } label: {
                             scoreRow(
-                                title: assessment.title,
-                                trailingText: scoreText(for: assessment),
+                                title: assignment.title,
+                                trailingText: scoreText(for: assignment),
                                 trailingColor: .tealMain
                             )
                         }
@@ -90,18 +92,18 @@ struct CourseDetailView: View {
             .padding(.horizontal, 36)
 
             VStack(alignment: .leading, spacing: 14) {
-                Text("Pending Assessments")
+                Text("Pending Assignments")
                     .font(.title3.bold())
                     .foregroundStyle(.black)
 
-                if pendingAssessments.isEmpty {
-                    sectionEmptyState("No pending assessments")
+                if pendingAssignments.isEmpty {
+                    sectionEmptyState("No pending assignments")
                 } else {
-                    ForEach(pendingAssessments) { assessment in
+                    ForEach(pendingAssignments) { assignment in
                         NavigationLink {
-                            AssignmentDetailView(assignment: assessment)
+                            AssignmentDetailView(assignment: assignment)
                         } label: {
-                            pendingRow(for: assessment)
+                            pendingRow(for: assignment)
                         }
                         .buttonStyle(.plain)
                     }
@@ -111,6 +113,87 @@ struct CourseDetailView: View {
         .padding(22)
         .background(Color.surfaceCard)
         .clipShape(RoundedRectangle(cornerRadius: 24))
+    }
+    
+    private var overallGradeCard2: some View {
+        HStack(alignment: .top, spacing: 12) {
+            overallMiniCard(
+                title: "Current Overall",
+                value: displayNumber(currentOverallScore),
+                subtitle: "earned",
+                color: .redMain
+            )
+
+            overallMiniCard(
+                title: "Maximum Overall",
+                value: displayNumber(maximumOverallScore),
+                subtitle: "possible",
+                color: .tealMain
+            )
+        }
+    }
+    
+    private var currentOverallScore: Double {
+        course.assignments.reduce(0) { total, assignment in
+            total + assignment.weightedScore
+        }
+    }
+    
+    private var maximumOverallScore: Double {
+        course.assignments.reduce(0) { total, assignment in
+            if assignment.achievedScore != nil {
+                return total + assignment.weightedScore
+            } else {
+                return total + assignment.weight
+            }
+        }
+    }
+
+    private var overallProgressValue: Double {
+        guard maximumOverallScore > 0 else {
+            return 0
+        }
+
+        return min(currentOverallScore / maximumOverallScore, 1)
+    }
+    
+    private func overallMiniCard(
+        title: String,
+        value: String,
+        subtitle: String,
+        color: Color
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 2) {
+                ForEach(title.split(separator: " "), id: \.self) { word in
+                    Text(String(word))
+                }
+            }
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(.black)
+            .frame(height: 44, alignment: .topLeading)
+
+            HStack(alignment: .firstTextBaseline, spacing: 4) {
+                Text(value)
+                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                    .foregroundStyle(.black)
+
+                Text("pts")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+            }
+
+            Text(subtitle)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            ProgressView(value: overallProgressValue)
+                .tint(color)
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, minHeight: 150, alignment: .topLeading)
+        .background(Color(red: 0.87, green: 0.96, blue: 0.84))
+        .clipShape(RoundedRectangle(cornerRadius: 20))
     }
 
     private var overallGradeCard: some View {
@@ -237,31 +320,31 @@ struct CourseDetailView: View {
             .clipShape(RoundedRectangle(cornerRadius: 18))
     }
 
-    private var gradedAssessments: [Assignment] {
+    private var gradedAssignments: [Assignment] {
         course.assignments
             .filter { $0.achievedScore != nil }
             .sorted { $0.dueDate < $1.dueDate }
     }
 
-    private var pendingAssessments: [Assignment] {
+    private var pendingAssignments: [Assignment] {
         course.assignments
             .filter { $0.achievedScore == nil }
             .sorted { $0.dueDate < $1.dueDate }
     }
 
     private var overallGrade: Double {
-        gradedAssessments.reduce(0) { $0 + $1.weightedScore }
+        gradedAssignments.reduce(0) { $0 + $1.weightedScore }
     }
 
     private var overallBadgeText: String {
-        if gradedAssessments.isEmpty {
+        if gradedAssignments.isEmpty {
             return "Pending"
         }
         return overallGrade >= 50 ? "Pass" : "At Risk"
     }
 
     private var overallBadgeColor: Color {
-        if gradedAssessments.isEmpty {
+        if gradedAssignments.isEmpty {
             return .yellowMain
         }
 
@@ -272,8 +355,11 @@ struct CourseDetailView: View {
         }
     }
 
-    private func scoreText(for assessment: Assignment) -> String {
-        "\(displayNumber(assessment.achievedScore ?? 0))/\(displayNumber(assessment.maxScore))"
+    private func scoreText(for assignment: Assignment) -> String {
+        if let maxScore = assignment.maxScore {
+            return "\(displayNumber(assignment.achievedScore ?? 0))/\(displayNumber(maxScore))"
+        }
+        return "0"
     }
 
     private func weightText(for assessment: Assignment) -> String {

@@ -233,7 +233,7 @@ struct DebugDataView: View {
                     assessment.assignmentType.rawValue,
                     formatDate(assessment.dueDate),
                     formatDouble(assessment.weight),
-                    formatDouble(assessment.maxScore),
+                    formatDouble(assessment.maxScore ?? 0),
                     assessment.achievedScore == nil ? "" : formatDouble(assessment.achievedScore!),
                     formatDouble(assessment.weightedScore),
                     assessment.status.rawValue,

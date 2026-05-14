@@ -4,7 +4,6 @@
 //
 //  Created by Đức Anh on 26/4/26.
 //
-
 import Foundation
 import SwiftData
 
@@ -15,7 +14,7 @@ final class Assignment: UUIDIdentifiableModel {
     var assignmentType: AssignmentType
     var dueDate: Date
     var weight: Double
-    var maxScore: Double
+    var maxScore: Double?
     var achievedScore: Double?
     var status: AssignmentStatus
     var note: String
@@ -31,7 +30,7 @@ final class Assignment: UUIDIdentifiableModel {
         assignmentType: AssignmentType,
         dueDate: Date,
         weight: Double,
-        maxScore: Double = 100,
+        maxScore: Double? = nil,
         achievedScore: Double? = nil,
         status: AssignmentStatus = .notStarted,
         note: String = "",
@@ -50,7 +49,15 @@ final class Assignment: UUIDIdentifiableModel {
     }
 
     var weightedScore: Double {
-        guard let achievedScore else { return 0 }
+        guard let achievedScore,
+              let maxScore,
+              maxScore > 0
+        else {
+            return 0
+        }
+
         return achievedScore / maxScore * weight
     }
+    
+    
 }

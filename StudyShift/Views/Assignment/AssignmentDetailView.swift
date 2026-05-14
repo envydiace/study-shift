@@ -13,6 +13,10 @@ struct AssignmentDetailView: View {
     @Environment(\.modelContext) private var modelContext
 
     let assignment: Assignment
+    
+    @State private var showScoreSheet = false
+    @State private var scoreText = ""
+    @State private var scoreErrorMessage = ""
 
     var body: some View {
         ZStack {
@@ -30,6 +34,10 @@ struct AssignmentDetailView: View {
             }
         }
         .toolbar(.hidden, for: .navigationBar)
+        .sheet(isPresented: $showScoreSheet) {
+            scoreInputSheet
+                .presentationDetents([.height(320)])
+        }
     }
 
     private var header: some View {
@@ -202,6 +210,9 @@ struct AssignmentDetailView: View {
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 28)
+                
+                Text("Score: \(scoreDisplayText)")
+                    .font(.caption.bold())
 
                 Divider()
                     .padding(.horizontal, 36)
@@ -225,17 +236,27 @@ struct AssignmentDetailView: View {
     }
 
     private var actionRow: some View {
-        HStack(spacing: 16) {
-            NavigationLink {
-                AddAssignmentView(
-                    assignmentToEdit: assignment,
-                    preselectedCourseID: assignment.course?.id
-                )
-            } label: {
-                Text("Edit")
-                    .frame(maxWidth: .infinity)
+        VStack(spacing: 12) {
+            HStack(spacing: 16) {
+                NavigationLink {
+                    AddAssignmentView(
+                        assignmentToEdit: assignment,
+                        preselectedCourseID: assignment.course?.id
+                    )
+                } label: {
+                    Text("Edit")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(PillButtonStyle())
+
+                Button {
+                    prepareScoreInput()
+                } label: {
+                    Text(scoreButtonTitle)
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(PillButtonStyle())
             }
-            .buttonStyle(PillButtonStyle())
 
             Button {
                 markAsDone()
@@ -245,6 +266,71 @@ struct AssignmentDetailView: View {
             }
             .buttonStyle(PillButtonStyle())
         }
+    }
+    
+    private var scoreInputSheet: some View {
+        NavigationStack {
+            VStack(alignment: .leading, spacing: 18) {
+                Text("Score Gained")
+                    .font(.title2.bold())
+
+                Text("Enter the score you received for this assignment.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Score")
+                        .font(.caption.bold())
+
+                    TextField("Example: 35", text: $scoreText)
+                        .keyboardType(.decimalPad)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 12)
+                        .background(Color.surfaceCard)
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
+
+                    if let maxScore = assignment.maxScore {
+                        Text("Maximum score: \(displayNumber(maxScore))")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Text("Set maximum score first before saving achieved score.")
+                            .font(.caption)
+                            .foregroundStyle(.red)
+                    }
+
+                    if !scoreErrorMessage.isEmpty {
+                        Text(scoreErrorMessage)
+                            .font(.caption)
+                            .foregroundStyle(.red)
+                    }
+                }
+
+                Spacer()
+
+                Button {
+                    saveAchievedScore()
+                } label: {
+                    Text("Save Score")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(PillButtonStyle())
+                .disabled(assignment.maxScore == nil)
+            }
+            .padding(24)
+            .background(Color.tealMain.ignoresSafeArea())
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Cancel") {
+                        showScoreSheet = false
+                    }
+                }
+            }
+        }
+    }
+    
+    private var scoreButtonTitle: String {
+        assignment.achievedScore == nil ? "Add Score" : "Edit Score"
     }
 
     private var subjectTitle: String {
@@ -371,6 +457,60 @@ struct AssignmentDetailView: View {
             return String(Int(value))
         }
         return String(format: "%.1f", value)
+    }
+    
+    private var scoreDisplayText: String {
+        guard let achievedScore = assignment.achievedScore else {
+            return "Not marked yet"
+        }
+
+        if let maxScore = assignment.maxScore {
+            return "\(displayNumber(achievedScore))/\(displayNumber(maxScore))"
+        }
+
+        return displayNumber(achievedScore)
+    }
+    
+    private func prepareScoreInput() {
+        if let achievedScore = assignment.achievedScore {
+            scoreText = displayNumber(achievedScore)
+        } else {
+            scoreText = ""
+        }
+
+        scoreErrorMessage = ""
+        showScoreSheet = true
+    }
+
+    private func saveAchievedScore() {
+        guard let maxScore = assignment.maxScore else {
+            scoreErrorMessage = "Maximum score is missing."
+            return
+        }
+
+        let trimmed = scoreText.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        guard let score = Double(trimmed) else {
+            scoreErrorMessage = "Please enter a valid score."
+            return
+        }
+
+        guard score >= 0 else {
+            scoreErrorMessage = "Score cannot be negative."
+            return
+        }
+
+        guard score <= maxScore else {
+            scoreErrorMessage = "Score cannot be higher than maximum score."
+            return
+        }
+
+        assignment.achievedScore = score
+        assignment.status = .marked
+
+        saveChanges()
+
+        showScoreSheet = false
     }
 }
 
