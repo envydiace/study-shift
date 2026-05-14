@@ -74,7 +74,13 @@ struct AssignmentRepository: RepositoryProtocol {
             )
 
             let result = try fetch(with: descriptor)
-            return Array(result.prefix(limit))
+            
+            let filtered = result.filter { assignment in
+                assignment.status != .submitted &&
+                assignment.status != .marked
+            }
+
+            return Array(filtered.prefix(limit))
         }
 
         func fetchUpcomingDeadlines(
@@ -91,7 +97,14 @@ struct AssignmentRepository: RepositoryProtocol {
             )
 
             let result = try fetch(with: descriptor)
-            return Array(result.prefix(limit))
+            
+            
+            let filtered = result.filter { assignment in
+                assignment.status != .submitted &&
+                assignment.status != .marked
+            }
+
+            return Array(filtered.prefix(limit))
         }
 }
 

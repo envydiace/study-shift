@@ -63,7 +63,7 @@ struct AddAssignmentView: View {
                 }
             }
             .background(Color.tealMain)
-            .navigationTitle("Add Assignment")
+            .navigationTitle(assignmentToEdit == nil ? "Add Assignment" :"Edit Assignment")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -95,10 +95,11 @@ struct AddAssignmentView: View {
         VStack(alignment: .leading, spacing: 18) {
             inputSection(title: "Assignment Title") {
                 TextField("Assignment 1", text: $title)
+                    .autocorrectionDisabled(true)
             }
             
             inputSection(title: "Deadline") {
-                DatePicker("", selection: $dueDate, displayedComponents: .date)
+                DatePicker("", selection: $dueDate, displayedComponents: [.date, .hourAndMinute])
                     .labelsHidden()
             }
             
@@ -111,7 +112,7 @@ struct AddAssignmentView: View {
                     Picker("Course", selection: $selectedCourseID) {
                         Text("Select a course").tag(Optional<UUID>.none)
                         ForEach(courses) { course in
-                            Text(course.name).tag(Optional(course.id))
+                            Text("\(course.code) - \(course.name)").tag(Optional(course.id))
                         }
                     }
                     .pickerStyle(.menu)
@@ -141,6 +142,7 @@ struct AddAssignmentView: View {
                 VStack(spacing: 10) {
                     HStack {
                         TextField("Task 1", text: $taskText)
+                            .autocorrectionDisabled(true)
 
                         Button {
                             addTask()
@@ -240,11 +242,14 @@ struct AddAssignmentView: View {
             return
         }
         
-        guard let weight = Double(weightText), weight >= 0 else {
-            alertMessage = "Please enter a valid weight."
-            showAlert = true
-            return
-        }
+        guard let weight = Double(weightText.trimmingCharacters(in: .whitespacesAndNewlines)),
+                  weight > 0,
+                  weight <= 100
+            else {
+                alertMessage = "Weight must be a number more than 0 and less than or equal to 100."
+                showAlert = true
+                return
+            }
         
         let maxScore: Double?
 
@@ -252,10 +257,10 @@ struct AddAssignmentView: View {
 
         if trimmedMaxScore.isEmpty {
             maxScore = nil
-        } else if let value = Double(trimmedMaxScore), value >= 1, value <= 100 {
+        } else if let value = Double(trimmedMaxScore), value > 0, value <= 100 {
             maxScore = value
         } else {
-            alertMessage = "Maximum mark must be a number between 1 and 100."
+            alertMessage = "Maximum mark must be a number more than 0 and less than or equal to 100."
             showAlert = true
             return
         }
@@ -303,6 +308,11 @@ Assignment Type: \(selectedAssignmentType.rawValue)
     }
 
     private func syncTasks(for assignment: Assignment, selectedCourse: Course?) {
+        let trimmed = taskText.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !trimmed.isEmpty {
+            taskDrafts.append(TaskDraft(title: trimmed))
+        }
+        
         let existingTasksByID = Dictionary(uniqueKeysWithValues: assignment.tasks.map { ($0.id, $0) })
         let retainedIDs = Set(taskDrafts.map(\.id))
 

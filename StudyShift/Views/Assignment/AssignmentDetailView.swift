@@ -14,6 +14,8 @@ struct AssignmentDetailView: View {
 
     let assignment: Assignment
     
+    @State private var showEditSheet = false
+    
     @State private var showScoreSheet = false
     @State private var scoreText = ""
     @State private var scoreErrorMessage = ""
@@ -33,10 +35,15 @@ struct AssignmentDetailView: View {
                 .padding(.bottom, 40)
             }
         }
-        .toolbar(.hidden, for: .navigationBar)
         .sheet(isPresented: $showScoreSheet) {
             scoreInputSheet
                 .presentationDetents([.height(320)])
+        }
+        .sheet(isPresented: $showEditSheet) {
+            AddAssignmentView(
+                assignmentToEdit: assignment,
+                preselectedCourseID: assignment.course?.id
+            )
         }
     }
 
@@ -46,17 +53,17 @@ struct AssignmentDetailView: View {
                 Text("Assessment Details")
                     .font(.title2.bold())
 
-                Text("Semester 3 | 2026")
-                    .font(.subheadline)
+//                Text("Semester 3 | 2026")
+//                    .font(.subheadline)
             }
 
             Spacer()
 
-            Image(systemName: "bell")
-                .foregroundStyle(.black)
-                .padding(8)
-                .background(.white.opacity(0.85))
-                .clipShape(Circle())
+//            Image(systemName: "bell")
+//                .foregroundStyle(.black)
+//                .padding(8)
+//                .background(.white.opacity(0.85))
+//                .clipShape(Circle())
         }
         .foregroundStyle(.black)
     }
@@ -67,16 +74,6 @@ struct AssignmentDetailView: View {
             todoCard
             briefPreviewCard
             actionRow
-
-            Button {
-                dismiss()
-            } label: {
-                Text("Assessment List")
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(PillButtonStyle())
-            .padding(.top, 10)
-            .padding(.horizontal, 60)
         }
         .padding(22)
         .background(Color.surfaceCard)
@@ -238,11 +235,8 @@ struct AssignmentDetailView: View {
     private var actionRow: some View {
         VStack(spacing: 12) {
             HStack(spacing: 16) {
-                NavigationLink {
-                    AddAssignmentView(
-                        assignmentToEdit: assignment,
-                        preselectedCourseID: assignment.course?.id
-                    )
+                Button {
+                    showEditSheet = true
                 } label: {
                     Text("Edit")
                         .frame(maxWidth: .infinity)

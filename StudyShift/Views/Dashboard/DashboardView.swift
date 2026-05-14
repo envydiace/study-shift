@@ -9,19 +9,26 @@ import SwiftUI
 
 struct DashboardView: View {
     @Environment(\.modelContext) private var modelContext
-    @StateObject private var viewModel = DashboardViewModel()
+    @StateObject private var viewModel: DashboardViewModel
 
     @Binding var selectedTab: MainTab
 
     private let screenBackground = Color.tealMain
 
+    init(
+        selectedTab: Binding<MainTab>
+    ) {
+        _selectedTab = selectedTab
+        _viewModel = StateObject(wrappedValue: DashboardViewModel())
+    }
+    
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 18) {
                 headerSection
                 shiftSummaryCard
                 sectionHeader(title: "Assignments In Progress", count: viewModel.dashboardAssignments.count)
-                assessmentSection
+                assignmentSection
                 sectionHeader(title: "Upcoming Classes", count: viewModel.upcomingClasses.count)
                 classesSection
                 sectionHeader(title: "Upcoming Deadlines", count: viewModel.upcomingDeadlines.count)
@@ -130,7 +137,7 @@ struct DashboardView: View {
 
     // MARK: - Assessments
 
-    var assessmentSection: some View {
+    var assignmentSection: some View {
         VStack {
             if viewModel.dashboardAssignments.isEmpty {
                 DashboardEmptyStateCard(
