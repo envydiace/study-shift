@@ -15,8 +15,8 @@ struct AssignmentsView: View {
     @State var isShowAddAssignment: Bool = false
     
     var body: some View {
+
         NavigationStack {
-            
             ZStack {
                 Color.tealMain
                     .ignoresSafeArea()
@@ -29,7 +29,12 @@ struct AssignmentsView: View {
                             emptyState
                         } else {
                             ForEach(assignments) { assignment in
-                                AssignmentCardView(assignment: assignment)
+                                NavigationLink {
+                                    AssignmentDetailView(assignment: assignment)
+                                } label: {
+                                    AssignmentCardView(assignment: assignment)
+                                }
+                                .buttonStyle(.plain)
                             }
                         }
                         
