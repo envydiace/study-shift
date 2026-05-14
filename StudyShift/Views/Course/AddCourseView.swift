@@ -19,71 +19,140 @@ struct AddCourseView: View {
         self.onSaved = onSaved
         _viewModel = StateObject(wrappedValue: AddCourseViewModel())
     }
-    
+
     var body: some View {
         NavigationStack {
-            Form {
-                Section("Course Information") {
-                    TextField("Course name", text: $viewModel.name)
+            ZStack {
+                Color.tealMain
+                    .ignoresSafeArea()
 
-                    TextField("Course code", text: $viewModel.code)
-                        .textInputAutocapitalization(.characters)
-                }
-
-                Section("Target Grade") {
-                    Picker("Target Grade", selection: $viewModel.targetGrade) {
-                        ForEach(GradeTarget.allCases, id: \.self) { grade in
-                            Text(grade.rawValue)
-                                .tag(grade)
-                        }
+                ScrollView(showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: 22) {
+                        headerSection
+                        formCard
+                        saveButton
                     }
-                }
-
-                Section("Color") {
-                    Picker("Course Color", selection: $viewModel.colorHex) {
-                        ForEach(viewModel.colorOptions, id: \.self) { color in
-                            HStack {
-                                Circle()
-                                    .fill(Color(hex: color))
-                                    .frame(width: 20, height: 20)
-
-                                Text(color)
-                            }
-                            .tag(color)
-                        }
-                    }
-                }
-
-                if viewModel.showValidationError {
-                    Section {
-                        Text(viewModel.validationMessage)
-                            .foregroundStyle(.red)
-                    }
+                    .padding(.horizontal, 24)
+                    .padding(.top, 24)
+                    .padding(.bottom, 40)
                 }
             }
             .navigationTitle("Add Course")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Cancel") {
                         dismiss()
                     }
-                }
-
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Save") {
-                        let success = viewModel.saveCourse()
-
-                        if success {
-                            onSaved?()
-                            dismiss()
-                        }
-                    }
+                    .foregroundStyle(.tealDark)
                 }
             }
             .task {
                 viewModel.configure(context: context)
             }
         }
+    }
+    
+    var headerSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Create Course")
+                .font(.system(size: 28, weight: .bold))
+                .foregroundStyle(.black)
+
+            Text("Add course details, target grade, and a display color for your assignments.")
+                .font(.system(size: 15, weight: .medium))
+                .foregroundStyle(.black.opacity(0.6))
+        }
+    }
+
+    var formCard: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            inputSection(title: "Course Name") {
+                TextField("Course name", text: $viewModel.name)
+                    .inputStyle()
+            }
+
+            inputSection(title: "Course Code") {
+                TextField("Course code", text: $viewModel.code)
+                    .textInputAutocapitalization(.characters)
+                    .inputStyle()
+            }
+
+            inputSection(title: "Target Grade") {
+                Picker("Target Grade", selection: $viewModel.targetGrade) {
+                    ForEach(GradeTarget.allCases, id: \.self) { grade in
+                        Text(grade.rawValue)
+                            .tag(grade)
+                    }
+                }
+                .pickerStyle(.segmented)
+            }
+
+            EventColorPickerSection(
+                title: "Color",
+                selectedColorHex: $viewModel.colorHex,
+                isShowingDropdown: $viewModel.isShowingColorDropdown
+            )
+
+            if viewModel.showValidationError {
+                HStack(alignment: .top, spacing: 10) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundStyle(.red)
+
+                    Text(viewModel.validationMessage)
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                }
+                .padding(12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.red.opacity(0.12))
+                .clipShape(RoundedRectangle(cornerRadius: 14))
+            }
+        }
+        .padding(20)
+        .background(Color.surfaceCard)
+        .clipShape(RoundedRectangle(cornerRadius: 28))
+    }
+
+    var saveButton: some View {
+        Button {
+            let success = viewModel.saveCourse()
+
+            if success {
+                onSaved?()
+                dismiss()
+            }
+        } label: {
+            Text("Save Course")
+                .font(.system(size: 18, weight: .bold))
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
+                .background(Color.tealDark)
+                .clipShape(Capsule())
+        }
+    }
+
+    func inputSection<Content: View>(
+        title: String,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.headline)
+                .foregroundStyle(.black)
+
+            content()
+        }
+    }
+}
+
+private extension View {
+    func inputStyle() -> some View {
+        self
+            .padding()
+            .background(Color(.systemBackground))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }
 

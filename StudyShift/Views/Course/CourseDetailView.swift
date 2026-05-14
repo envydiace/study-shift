@@ -9,6 +9,8 @@ import SwiftUI
 
 struct CourseDetailView: View {
     let course: Course
+    
+    @State var isShowAddAssignment = false
 
     var body: some View {
         ZStack {
@@ -25,7 +27,7 @@ struct CourseDetailView: View {
                 .padding(.bottom, 40)
             }
         }
-        .toolbar(.hidden, for: .navigationBar)
+//        .toolbar(.hidden, for: .navigationBar)
     }
 
     private var header: some View {
@@ -34,17 +36,17 @@ struct CourseDetailView: View {
                 Text("Course Detail")
                     .font(.title2.bold())
 
-                Text("Semester 3 | 2026")
-                    .font(.subheadline)
+//                Text("Semester 3 | 2026")
+//                    .font(.subheadline)
             }
 
             Spacer()
 
-            Image(systemName: "bell")
-                .foregroundStyle(.black)
-                .padding(8)
-                .background(.white.opacity(0.85))
-                .clipShape(Circle())
+//            Image(systemName: "bell")
+//                .foregroundStyle(.black)
+//                .padding(8)
+//                .background(.white.opacity(0.85))
+//                .clipShape(Circle())
         }
         .foregroundStyle(.black)
     }
@@ -82,10 +84,10 @@ struct CourseDetailView: View {
                 }
             }
 
-            NavigationLink {
-                AddAssignmentView(preselectedCourseID: course.id)
+            Button {
+                isShowAddAssignment = true
             } label: {
-                Text("+ Add")
+                Text("+ Add Assignment")
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(PillButtonStyle())
@@ -113,6 +115,9 @@ struct CourseDetailView: View {
         .padding(22)
         .background(Color.surfaceCard)
         .clipShape(RoundedRectangle(cornerRadius: 24))
+        .sheet(isPresented: $isShowAddAssignment) {
+            AddAssignmentView(preselectedCourseID: course.id)
+        }
     }
     
     private var overallGradeCard2: some View {

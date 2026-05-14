@@ -17,17 +17,8 @@ final class AddCourseViewModel: ObservableObject {
 
     @Published var showValidationError: Bool = false
     @Published var validationMessage: String = ""
-
-    let colorOptions: [String] = [
-        "#4F46E5",
-        "#2563EB",
-        "#16A34A",
-        "#DC2626",
-        "#EA580C",
-        "#9333EA",
-        "#0891B2",
-        "#CA8A04"
-    ]
+    
+    @Published var isShowingColorDropdown: Bool = false
 
     private var repository: CourseRepository?
 
