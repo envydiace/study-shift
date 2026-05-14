@@ -76,8 +76,7 @@ struct AssignmentRepository: RepositoryProtocol {
             let result = try fetch(with: descriptor)
             
             let filtered = result.filter { assignment in
-                assignment.status != .submitted &&
-                assignment.status != .marked
+                assignment.status == .inProgress
             }
 
             return Array(filtered.prefix(limit))

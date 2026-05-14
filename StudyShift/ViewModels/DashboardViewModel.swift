@@ -21,11 +21,11 @@ final class DashboardViewModel: ObservableObject {
     @Published var workedHoursText: String = "0 h"
     @Published var workedProgress: Double = 0
 
-    @Published var dashboardAssignments: [DashboardAssignmentItem] = []
+    @Published var inProgressAssignments: [Assignment] = []
 
     @Published var upcomingClasses: [DashboardClassItem] = []
 
-    @Published var upcomingDeadlines: [DashboardDeadlineItem] = []
+    @Published var upcomingDeadlines: [Assignment] = []
 
     private var classSessionRepository: ClassSessionRepository?
     private var workShiftRepository: WorkShiftRepository?
@@ -115,7 +115,7 @@ final class DashboardViewModel: ObservableObject {
                 limit: 5
             )
 
-            dashboardAssignments = mapToDashboardAssignmentItems(assignments)
+            inProgressAssignments = assignments
             errorMessage = nil
         } catch {
             errorMessage = "Failed to load assignments."
@@ -134,6 +134,17 @@ final class DashboardViewModel: ObservableObject {
                 progress: calculateAssessmentProgress(assignment)
             )
         }
+    }
+    
+    func mapToDashboardAssignmentItem(
+        _ assignment: Assignment
+    ) -> DashboardAssignmentItem {
+        DashboardAssignmentItem(
+            subjectCode: assignment.course?.code ?? "",
+            subjectName: assignment.course?.name ?? "No Course",
+            title: assignment.title,
+            progress: calculateAssessmentProgress(assignment)
+        )
     }
 
     // MARK: - Load upcoming classes
@@ -177,7 +188,7 @@ final class DashboardViewModel: ObservableObject {
                 limit: 2
             )
 
-            upcomingDeadlines = mapToDeadlineItems(assignments)
+            upcomingDeadlines = assignments
             errorMessage = nil
         } catch {
             errorMessage = "Failed to load upcoming deadlines."
@@ -198,6 +209,19 @@ final class DashboardViewModel: ObservableObject {
                 statusBackground: deadlineStatusBackground(days: days)
             )
         }
+    }
+    
+    func mapToDeadlineItem(
+        _ assignment: Assignment
+    ) -> DashboardDeadlineItem {
+        let days = daysUntil(assignment.dueDate)
+        return DashboardDeadlineItem(
+            title: assignment.title,
+            dueText: dueText(days: days),
+            statusText: deadlineStatusText(days: days),
+            statusColor: deadlineStatusColor(days: days),
+            statusBackground: deadlineStatusBackground(days: days)
+        )
     }
 
     // MARK: - Helpers
