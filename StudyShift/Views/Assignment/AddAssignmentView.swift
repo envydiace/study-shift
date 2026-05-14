@@ -20,8 +20,8 @@ struct AddAssignmentView: View {
     @State private var dueDate = Date()
     @State private var selectedCourseID: UUID?
     @State private var selectedAssignmentType: AssignmentType = .other
-    @State private var selectedTargetGrade: GradeTarget = .highDistinction
     @State private var weightText = ""
+    @State private var maxScoreText = ""
     @State private var taskText = ""
     @State private var taskDrafts: [TaskDraft] = []
     @State private var didLoadInitialState = false
@@ -83,11 +83,6 @@ struct AddAssignmentView: View {
             .onChange(of: courses.count) { _, _ in
                 loadInitialStateIfNeeded()
             }
-            .onChange(of: selectedCourseID) { _, newValue in
-                guard let newValue,
-                      let course = courses.first(where: { $0.id == newValue }) else { return }
-                selectedTargetGrade = course.targetGrade
-            }
         }
     }
                 
@@ -137,13 +132,9 @@ struct AddAssignmentView: View {
                     .keyboardType(.decimalPad)
             }
             
-            inputSection(title: "Target Grade") {
-                Picker("Target Grade", selection: $selectedTargetGrade) {
-                    ForEach(GradeTarget.allCases, id: \.self) { grade in
-                        Text(grade.rawValue).tag(grade)
-                    }
-                }
-                .pickerStyle(.segmented)
+            inputSection(title: "Maximum Mark") {
+                TextField("Optional, 1 - 100", text: $maxScoreText)
+                    .keyboardType(.decimalPad)
             }
             
             inputSection(title: "Sub Tasks / To Do") {
@@ -219,8 +210,13 @@ struct AddAssignmentView: View {
             title = assignmentToEdit.title
             dueDate = assignmentToEdit.dueDate
             selectedCourseID = assignmentToEdit.course?.id ?? preselectedCourseID ?? courses.first?.id
-            selectedTargetGrade = assignmentToEdit.course?.targetGrade ?? .highDistinction
+            selectedAssignmentType = assignmentToEdit.assignmentType
             weightText = Self.wholeNumberFormatter.string(from: NSNumber(value: assignmentToEdit.weight)) ?? "\(Int(assignmentToEdit.weight))"
+            if let maxScore = assignmentToEdit.maxScore {
+                maxScoreText = Self.numberFormatter.string(from: NSNumber(value: maxScore)) ?? "\(maxScore)"
+            } else {
+                maxScoreText = ""
+            }
             taskDrafts = assignmentToEdit.tasks
                 .sorted { $0.createdAt < $1.createdAt }
                 .map { TaskDraft(id: $0.id, title: $0.title) }
@@ -233,7 +229,6 @@ struct AddAssignmentView: View {
 
         didLoadInitialState = true
         selectedCourseID = matchedCourse.id
-        selectedTargetGrade = matchedCourse.targetGrade
     }
 
     private func saveAssignment() {
@@ -251,34 +246,52 @@ struct AddAssignmentView: View {
             return
         }
         
+        let maxScore: Double?
+
+        let trimmedMaxScore = maxScoreText.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        if trimmedMaxScore.isEmpty {
+            maxScore = nil
+        } else if let value = Double(trimmedMaxScore), value >= 1, value <= 100 {
+            maxScore = value
+        } else {
+            alertMessage = "Maximum mark must be a number between 1 and 100."
+            showAlert = true
+            return
+        }
+        
         let selectedCourse = courses.first(where: { $0.id == selectedCourseID })
         
         let note = """
-Target Grade: \(selectedTargetGrade.rawValue)
 Assignment Type: \(selectedAssignmentType.rawValue)
 """
-        
-        let newAssignment = Assignment(
-            title: trimmedTitle,
-            assignmentType: selectedAssignmentType,
-            dueDate: dueDate,
-            weight: weight,
-            status: .notStarted,
-            note: note,
-            course: selectedCourse
-        )
 
-        if assignmentToEdit == nil {
-            modelContext.insert(newAssignment)
+        let assignment: Assignment
+        if let assignmentToEdit {
+            assignment = assignmentToEdit
+        } else {
+            assignment = Assignment(
+                title: trimmedTitle,
+                assignmentType: selectedAssignmentType,
+                dueDate: dueDate,
+                weight: weight,
+                maxScore: maxScore,
+                status: .notStarted,
+                note: note,
+                course: selectedCourse
+            )
+            modelContext.insert(assignment)
         }
 
-        newAssignment.title = trimmedTitle
-        newAssignment.dueDate = dueDate
-        newAssignment.weight = weight
-        newAssignment.note = note
-        newAssignment.course = selectedCourse
+        assignment.title = trimmedTitle
+        assignment.assignmentType = selectedAssignmentType
+        assignment.dueDate = dueDate
+        assignment.weight = weight
+        assignment.maxScore = maxScore
+        assignment.note = note
+        assignment.course = selectedCourse
 
-        syncTasks(for: newAssignment, selectedCourse: selectedCourse)
+        syncTasks(for: assignment, selectedCourse: selectedCourse)
 
         do {
             try modelContext.save()
@@ -319,22 +332,6 @@ Assignment Type: \(selectedAssignmentType.rawValue)
         }
     }
 
-    private func extractWordLimit(from note: String) -> String {
-        note
-            .split(separator: "\n")
-            .compactMap { line -> String? in
-                let parts = line.split(separator: ":", maxSplits: 1).map(String.init)
-                guard parts.count == 2,
-                      parts[0].trimmingCharacters(in: .whitespacesAndNewlines) == "Word Limit" else {
-                    return nil
-                }
-                return parts[1].trimmingCharacters(in: .whitespacesAndNewlines)
-            }
-            .first?
-            .replacingOccurrences(of: "-", with: "")
-            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-    }
-
     private struct TaskDraft: Identifiable {
         let id: UUID
         var title: String
@@ -348,6 +345,13 @@ Assignment Type: \(selectedAssignmentType.rawValue)
     private static let wholeNumberFormatter: NumberFormatter = {
         let formatter = NumberFormatter()
         formatter.maximumFractionDigits = 0
+        formatter.minimumFractionDigits = 0
+        return formatter
+    }()
+    
+    private static let numberFormatter: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.maximumFractionDigits = 2
         formatter.minimumFractionDigits = 0
         return formatter
     }()
