@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct CourseDetailView: View {
-    let subject: Subject
+    let course: Course
 
     var body: some View {
         ZStack {
@@ -51,7 +51,7 @@ struct CourseDetailView: View {
 
     private var contentCard: some View {
         VStack(alignment: .leading, spacing: 24) {
-            Text("\(subject.code) \(subject.name)")
+            Text("\(course.code) \(course.name)")
                 .font(.title.bold())
                 .foregroundStyle(.black)
 
@@ -67,7 +67,7 @@ struct CourseDetailView: View {
                 } else {
                     ForEach(gradedAssessments) { assessment in
                         NavigationLink {
-                            AssignmentDetailView(assessment: assessment)
+                            AssignmentDetailView(assignment: assessment)
                         } label: {
                             scoreRow(
                                 title: assessment.title,
@@ -81,7 +81,7 @@ struct CourseDetailView: View {
             }
 
             NavigationLink {
-                AddAssignmentView(preselectedSubjectID: subject.id)
+                AddAssignmentView(preselectedCourseID: course.id)
             } label: {
                 Text("+ Add")
                     .frame(maxWidth: .infinity)
@@ -99,7 +99,7 @@ struct CourseDetailView: View {
                 } else {
                     ForEach(pendingAssessments) { assessment in
                         NavigationLink {
-                            AssignmentDetailView(assessment: assessment)
+                            AssignmentDetailView(assignment: assessment)
                         } label: {
                             pendingRow(for: assessment)
                         }
@@ -181,7 +181,7 @@ struct CourseDetailView: View {
         .clipShape(RoundedRectangle(cornerRadius: 18))
     }
 
-    private func pendingRow(for assessment: Assessment) -> some View {
+    private func pendingRow(for assessment: Assignment) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 8) {
@@ -237,14 +237,14 @@ struct CourseDetailView: View {
             .clipShape(RoundedRectangle(cornerRadius: 18))
     }
 
-    private var gradedAssessments: [Assessment] {
-        subject.assessments
+    private var gradedAssessments: [Assignment] {
+        course.assignments
             .filter { $0.achievedScore != nil }
             .sorted { $0.dueDate < $1.dueDate }
     }
 
-    private var pendingAssessments: [Assessment] {
-        subject.assessments
+    private var pendingAssessments: [Assignment] {
+        course.assignments
             .filter { $0.achievedScore == nil }
             .sorted { $0.dueDate < $1.dueDate }
     }
@@ -272,40 +272,40 @@ struct CourseDetailView: View {
         }
     }
 
-    private func scoreText(for assessment: Assessment) -> String {
+    private func scoreText(for assessment: Assignment) -> String {
         "\(displayNumber(assessment.achievedScore ?? 0))/\(displayNumber(assessment.maxScore))"
     }
 
-    private func weightText(for assessment: Assessment) -> String {
+    private func weightText(for assessment: Assignment) -> String {
         "\(displayNumber(assessment.weight)) Pts"
     }
 
-    private func progressValue(for assessment: Assessment) -> Double {
+    private func progressValue(for assessment: Assignment) -> Double {
         guard !assessment.tasks.isEmpty else { return 0.2 }
         let completed = assessment.tasks.filter(\.isCompleted).count
         return Double(completed) / Double(assessment.tasks.count)
     }
 
-    private func progressMessage(for assessment: Assessment) -> String {
+    private func progressMessage(for assessment: Assignment) -> String {
         let percent = Int((1 - progressValue(for: assessment)) * 100)
         return "Need \(max(percent, 0))% more"
     }
 
-    private func dueText(for assessment: Assessment) -> String {
+    private func dueText(for assessment: Assignment) -> String {
         let days = Calendar.current.dateComponents([.day], from: .now, to: assessment.dueDate).day ?? 0
         if days <= 0 { return "Due Today" }
         if days == 1 { return "Due Tomorrow" }
         return "Due in \(days) days"
     }
 
-    private func statusText(for assessment: Assessment) -> String {
+    private func statusText(for assessment: Assignment) -> String {
         let days = Calendar.current.dateComponents([.day], from: .now, to: assessment.dueDate).day ?? 0
         if days <= 1 { return "Urgent" }
         if days <= 3 { return "Soon" }
         return "On Track"
     }
 
-    private func statusBackgroundColor(for assessment: Assessment) -> Color {
+    private func statusBackgroundColor(for assessment: Assignment) -> Color {
         let status = statusText(for: assessment)
         switch status {
         case "Urgent":
@@ -317,7 +317,7 @@ struct CourseDetailView: View {
         }
     }
 
-    private func statusForegroundColor(for assessment: Assessment) -> Color {
+    private func statusForegroundColor(for assessment: Assignment) -> Color {
         let status = statusText(for: assessment)
         switch status {
         case "Urgent":
@@ -337,6 +337,6 @@ struct CourseDetailView: View {
 
 #Preview {
     NavigationStack {
-        CourseDetailView(subject: Subject(name: "Cloud Computing", code: "42904"))
+        CourseDetailView(course: Course(name: "Cloud Computing", code: "42904"))
     }
 }

@@ -12,7 +12,7 @@ struct AssignmentDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
 
-    let assessment: Assessment
+    let assignment: Assignment
 
     var body: some View {
         ZStack {
@@ -95,7 +95,7 @@ struct AssignmentDetailView: View {
                 }
             }
 
-            Text(assessment.title)
+            Text(assignment.title)
                 .font(.title3.bold())
                 .foregroundStyle(.black)
 
@@ -134,7 +134,7 @@ struct AssignmentDetailView: View {
                 .font(.title3.weight(.semibold))
                 .foregroundStyle(.black)
 
-            if assessment.tasks.isEmpty {
+            if assignment.tasks.isEmpty {
                 Text("No tasks added yet")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
@@ -190,7 +190,7 @@ struct AssignmentDetailView: View {
                 Text(subjectTitle)
                     .font(.headline)
 
-                Text(assessment.assessmentType.rawValue)
+                Text(assignment.assignmentType.rawValue)
                     .font(.caption)
                     .foregroundStyle(.secondary)
 
@@ -206,7 +206,7 @@ struct AssignmentDetailView: View {
                 Divider()
                     .padding(.horizontal, 36)
 
-                Text("Weight: \(displayNumber(assessment.weight))%")
+                Text("Weight: \(displayNumber(assignment.weight))%")
                     .font(.caption.bold())
 
                 Text(dueDateLongText)
@@ -228,8 +228,8 @@ struct AssignmentDetailView: View {
         HStack(spacing: 16) {
             NavigationLink {
                 AddAssignmentView(
-                    assessmentToEdit: assessment,
-                    preselectedSubjectID: assessment.subject?.id
+                    assignmentToEdit: assignment,
+                    preselectedCourseID: assignment.course?.id
                 )
             } label: {
                 Text("Edit")
@@ -248,20 +248,20 @@ struct AssignmentDetailView: View {
     }
 
     private var subjectTitle: String {
-        if let subject = assessment.subject {
+        if let subject = assignment.course {
             return "\(subject.code) \(subject.name)"
         }
         return "No Course Linked"
     }
 
     private var targetGrade: String {
-        assessment.subject?.targetGrade.rawValue ?? "--"
+        assignment.course?.targetGrade.rawValue ?? "--"
     }
 
     private var progressValue: Double {
-        guard !assessment.tasks.isEmpty else { return 0.2 }
-        let completed = assessment.tasks.filter(\.isCompleted).count
-        return Double(completed) / Double(assessment.tasks.count)
+        guard !assignment.tasks.isEmpty else { return 0.2 }
+        let completed = assignment.tasks.filter(\.isCompleted).count
+        return Double(completed) / Double(assignment.tasks.count)
     }
 
     private var progressMessage: String {
@@ -270,22 +270,22 @@ struct AssignmentDetailView: View {
     }
 
     private var dueText: String {
-        let days = Calendar.current.dateComponents([.day], from: .now, to: assessment.dueDate).day ?? 0
+        let days = Calendar.current.dateComponents([.day], from: .now, to: assignment.dueDate).day ?? 0
         if days <= 0 { return "Due Today" }
         if days == 1 { return "Due Tomorrow" }
         return "Due in \(days) days"
     }
 
     private var dueDateLongText: String {
-        assessment.dueDate.formatted(date: .long, time: .omitted)
+        assignment.dueDate.formatted(date: .long, time: .omitted)
     }
 
     private var statusText: String {
-        if assessment.status == .submitted || assessment.status == .marked {
+        if assignment.status == .submitted || assignment.status == .marked {
             return "Done"
         }
 
-        let days = Calendar.current.dateComponents([.day], from: .now, to: assessment.dueDate).day ?? 0
+        let days = Calendar.current.dateComponents([.day], from: .now, to: assignment.dueDate).day ?? 0
         if days <= 1 { return "Urgent" }
         if days <= 3 { return "Soon" }
         return "On Track"
@@ -316,11 +316,11 @@ struct AssignmentDetailView: View {
     }
 
     private var sortedTasks: [TodoTask] {
-        assessment.tasks.sorted { $0.createdAt < $1.createdAt }
+        assignment.tasks.sorted { $0.createdAt < $1.createdAt }
     }
 
     private var briefPreviewText: String {
-        let trimmed = assessment.note.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmed = assignment.note.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmed.isEmpty {
             return "Add assignment notes or a brief to keep the reference material for this assessment in one place."
         }
@@ -328,7 +328,7 @@ struct AssignmentDetailView: View {
     }
 
     private var doneButtonTitle: String {
-        assessment.status == .submitted || assessment.status == .marked ? "Completed" : "Mark As Done"
+        assignment.status == .submitted || assignment.status == .marked ? "Completed" : "Mark As Done"
     }
 
     private func toggle(_ task: TodoTask) {
@@ -338,23 +338,23 @@ struct AssignmentDetailView: View {
     }
 
     private func markAsDone() {
-        for task in assessment.tasks {
+        for task in assignment.tasks {
             task.isCompleted = true
         }
-        assessment.status = .submitted
+        assignment.status = .submitted
         saveChanges()
     }
 
     private func updateAssessmentStatusAfterTaskChange() {
-        guard !assessment.tasks.isEmpty else { return }
+        guard !assignment.tasks.isEmpty else { return }
 
-        let completedCount = assessment.tasks.filter(\.isCompleted).count
-        if completedCount == assessment.tasks.count {
-            assessment.status = .submitted
+        let completedCount = assignment.tasks.filter(\.isCompleted).count
+        if completedCount == assignment.tasks.count {
+            assignment.status = .submitted
         } else if completedCount > 0 {
-            assessment.status = .inProgress
+            assignment.status = .inProgress
         } else {
-            assessment.status = .notStarted
+            assignment.status = .notStarted
         }
     }
 
@@ -377,9 +377,9 @@ struct AssignmentDetailView: View {
 #Preview {
     NavigationStack {
         AssignmentDetailView(
-            assessment: Assessment(
+            assignment: Assignment(
                 title: "Assignment 2",
-                assessmentType: .assignment,
+                assignmentType: .other,
                 dueDate: .now.addingTimeInterval(86_400),
                 weight: 30
             )

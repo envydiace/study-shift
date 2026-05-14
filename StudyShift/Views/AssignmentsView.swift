@@ -30,9 +30,9 @@ struct AssignmentsView: View {
                         } else {
                             ForEach(assignments) { assignment in
                                 NavigationLink {
-                                    AssignmentDetailView(assessment: assignment)
+                                    AssignmentDetailView(assignment: assignment)
                                 } label: {
-                                    AssignmentCardView(assessment: assignment)
+                                    AssignmentCardView(assignment: assignment)
                                 }
                                 .buttonStyle(.plain)
                             }

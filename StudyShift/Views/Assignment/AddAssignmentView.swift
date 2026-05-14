@@ -13,8 +13,8 @@ struct AddAssignmentView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Course.name) private var courses: [Course]
 
-    private let assessmentToEdit: Assessment?
-    private let preselectedSubjectID: UUID?
+    private let assignmentToEdit: Assignment?
+    private let preselectedCourseID: UUID?
 
     @State private var title = ""
     @State private var dueDate = Date()
@@ -30,11 +30,11 @@ struct AddAssignmentView: View {
     @State private var alertMessage = ""
 
     init(
-        assessmentToEdit: Assessment? = nil,
-        preselectedSubjectID: UUID? = nil
+        assignmentToEdit: Assignment? = nil,
+        preselectedCourseID: UUID? = nil
     ) {
-        self.assessmentToEdit = assessmentToEdit
-        self.preselectedSubjectID = preselectedSubjectID
+        self.assignmentToEdit = assignmentToEdit
+        self.preselectedCourseID = preselectedCourseID
     }
 
     var body: some View {
@@ -51,7 +51,7 @@ struct AddAssignmentView: View {
                         Button {
                         saveAssignment()
                         } label: {
-                            Text(assessmentToEdit == nil ? "+ Add Assignment" : "Save Changes")
+                            Text(assignmentToEdit == nil ? "+ Add Assignment" : "Save Changes")
                                 .frame(maxWidth: .infinity)
                         }
                         .buttonStyle(PillButtonStyle())
@@ -80,7 +80,7 @@ struct AddAssignmentView: View {
             .onAppear {
                 loadInitialStateIfNeeded()
             }
-            .onChange(of: subjects.count) { _, _ in
+            .onChange(of: courses.count) { _, _ in
                 loadInitialStateIfNeeded()
             }
             .onChange(of: selectedCourseID) { _, newValue in
@@ -109,7 +109,7 @@ struct AddAssignmentView: View {
             
             inputSection(title: "Course") {
                 if courses.isEmpty {
-                    Text("Add a subject first before creating an assignment.")
+                    Text("Add a course first before creating an assignment.")
                         .foregroundStyle(.gray)
                         .font(.subheadline)
                 } else {
@@ -214,27 +214,26 @@ struct AddAssignmentView: View {
     private func loadInitialStateIfNeeded() {
         guard !didLoadInitialState else { return }
 
-        if let assessmentToEdit {
+        if let assignmentToEdit {
             didLoadInitialState = true
-            title = assessmentToEdit.title
-            dueDate = assessmentToEdit.dueDate
-            selectedSubjectID = assessmentToEdit.subject?.id ?? preselectedSubjectID ?? subjects.first?.id
-            selectedTargetGrade = assessmentToEdit.subject?.targetGrade ?? .highDistinction
-            weightText = Self.wholeNumberFormatter.string(from: NSNumber(value: assessmentToEdit.weight)) ?? "\(Int(assessmentToEdit.weight))"
-            wordLimitText = extractWordLimit(from: assessmentToEdit.note)
-            taskDrafts = assessmentToEdit.tasks
+            title = assignmentToEdit.title
+            dueDate = assignmentToEdit.dueDate
+            selectedCourseID = assignmentToEdit.course?.id ?? preselectedCourseID ?? courses.first?.id
+            selectedTargetGrade = assignmentToEdit.course?.targetGrade ?? .highDistinction
+            weightText = Self.wholeNumberFormatter.string(from: NSNumber(value: assignmentToEdit.weight)) ?? "\(Int(assignmentToEdit.weight))"
+            taskDrafts = assignmentToEdit.tasks
                 .sorted { $0.createdAt < $1.createdAt }
                 .map { TaskDraft(id: $0.id, title: $0.title) }
             return
         }
 
-        guard let matchedSubject = subjects.first(where: { $0.id == preselectedSubjectID }) ?? subjects.first else {
+        guard let matchedCourse = courses.first(where: { $0.id == preselectedCourseID }) ?? courses.first else {
             return
         }
 
         didLoadInitialState = true
-        selectedSubjectID = matchedSubject.id
-        selectedTargetGrade = matchedSubject.targetGrade
+        selectedCourseID = matchedCourse.id
+        selectedTargetGrade = matchedCourse.targetGrade
     }
 
     private func saveAssignment() {
@@ -269,17 +268,17 @@ Assignment Type: \(selectedAssignmentType.rawValue)
             course: selectedCourse
         )
 
-        if assessmentToEdit == nil {
-            modelContext.insert(assignment)
+        if assignmentToEdit == nil {
+            modelContext.insert(newAssignment)
         }
 
-        assignment.title = trimmedTitle
-        assignment.dueDate = dueDate
-        assignment.weight = weight
-        assignment.note = note
-        assignment.subject = selectedSubject
+        newAssignment.title = trimmedTitle
+        newAssignment.dueDate = dueDate
+        newAssignment.weight = weight
+        newAssignment.note = note
+        newAssignment.course = selectedCourse
 
-        syncTasks(for: assignment, selectedSubject: selectedSubject)
+        syncTasks(for: newAssignment, selectedCourse: selectedCourse)
 
         do {
             try modelContext.save()
@@ -290,7 +289,7 @@ Assignment Type: \(selectedAssignmentType.rawValue)
         }
     }
 
-    private func syncTasks(for assignment: Assessment, selectedSubject: Subject?) {
+    private func syncTasks(for assignment: Assignment, selectedCourse: Course?) {
         let existingTasksByID = Dictionary(uniqueKeysWithValues: assignment.tasks.map { ($0.id, $0) })
         let retainedIDs = Set(taskDrafts.map(\.id))
 
@@ -304,7 +303,7 @@ Assignment Type: \(selectedAssignmentType.rawValue)
             if let task = existingTasksByID[draft.id] {
                 task.title = draft.title
                 task.dueDate = dueDate
-                task.subject = selectedSubject
+                task.course = selectedCourse
                 continue
             }
 
@@ -312,8 +311,8 @@ Assignment Type: \(selectedAssignmentType.rawValue)
                 id: draft.id,
                 title: draft.title,
                 dueDate: dueDate,
-                subject: selectedSubject,
-                assessment: assignment
+                course: selectedCourse,
+                assignment: assignment
             )
             modelContext.insert(newTask)
             assignment.tasks.append(newTask)
