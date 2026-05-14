@@ -15,10 +15,14 @@ final class WorkShiftViewModel: ObservableObject {
     @Published var shifts: [WorkShift] = []
 
     private var repository: WorkShiftRepository?
+    private var classSessionRepository: ClassSessionRepository?
 
     func configure(context: ModelContext) {
         if repository == nil {
             repository = WorkShiftRepository(context: context)
+        }
+        if classSessionRepository == nil {
+            classSessionRepository = ClassSessionRepository(context: context)
         }
         loadShifts()
     }
@@ -42,6 +46,34 @@ final class WorkShiftViewModel: ObservableObject {
         }
     }
 
+    // MARK: - Clash detection
+
+    /// Returns true if the proposed time range clashes with any existing shift or class session
+    func hasClash(startTime: Date, endTime: Date, excluding shift: WorkShift? = nil) -> String? {
+        // Check against existing shifts
+        for existing in shifts {
+            if let excluded = shift, existing.id == excluded.id { continue }
+            if timesOverlap(start1: startTime, end1: endTime, start2: existing.startTime, end2: existing.endTime) {
+                return "This time clashes with another work shift at \(existing.workplace)."
+            }
+        }
+
+        // Check against class sessions
+        if let sessions = try? classSessionRepository?.fetchAll() {
+            for session in sessions {
+                if timesOverlap(start1: startTime, end1: endTime, start2: session.startTime, end2: session.endTime) {
+                    return "This time clashes with a class: \(session.title)."
+                }
+            }
+        }
+
+        return nil
+    }
+
+    private func timesOverlap(start1: Date, end1: Date, start2: Date, end2: Date) -> Bool {
+        return start1 < end2 && end1 > start2
+    }
+
     // MARK: - Fortnight totals
 
     var totalHoursThisFortnight: Double {
@@ -58,6 +90,20 @@ final class WorkShiftViewModel: ObservableObject {
     var shiftsThisFortnight: [WorkShift] {
         let range = currentFortnightRange()
         return shifts.filter { $0.startTime >= range.start && $0.startTime <= range.end }
+    }
+
+    // MARK: - Upcoming vs Previous
+
+    var upcomingShifts: [WorkShift] {
+        shifts
+            .filter { $0.startTime >= Date() }
+            .sorted { $0.startTime < $1.startTime }
+    }
+
+    var previousShifts: [WorkShift] {
+        shifts
+            .filter { $0.startTime < Date() }
+            .sorted { $0.startTime > $1.startTime } // most recent first
     }
 
     var shiftsByWorkplace: [(workplace: String, shifts: [WorkShift], totalHours: Double, durationLabel: String)] {
@@ -88,7 +134,7 @@ final class WorkShiftViewModel: ObservableObject {
 
     // MARK: - Helpers
 
-    private func durationLabel(from totalMinutes: Int) -> String {
+    func durationLabel(from totalMinutes: Int) -> String {
         let hours = totalMinutes / 60
         let minutes = totalMinutes % 60
         if minutes == 0 {
