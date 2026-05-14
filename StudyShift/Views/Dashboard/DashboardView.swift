@@ -137,7 +137,7 @@ struct DashboardView: View {
         }
     }
 
-    // MARK: - Assessments
+    // MARK: - Assignments
 
     var assignmentSection: some View {
         VStack {

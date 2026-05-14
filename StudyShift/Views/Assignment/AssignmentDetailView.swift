@@ -1,5 +1,5 @@
 //
-//  AssessmentDetailView.swift
+//  AssignmentDetailView.swift
 //  StudyShift
 //
 //  Created by Chelvin Alexyus on 14/5/2026.
@@ -50,7 +50,7 @@ struct AssignmentDetailView: View {
     private var header: some View {
         HStack(alignment: .top) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Assessment Details")
+                Text("Assignment Details")
                     .font(.title2.bold())
 
 //                Text("Semester 3 | 2026")
@@ -402,7 +402,7 @@ struct AssignmentDetailView: View {
     private var briefPreviewText: String {
         let trimmed = assignment.note.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmed.isEmpty {
-            return "Add assignment notes or a brief to keep the reference material for this assessment in one place."
+            return "Add assignment notes or a brief to keep the reference material for this assignment in one place."
         }
         return trimmed
     }
@@ -413,7 +413,7 @@ struct AssignmentDetailView: View {
 
     private func toggle(_ task: TodoTask) {
         task.isCompleted.toggle()
-        updateAssessmentStatusAfterTaskChange()
+        updateAssignmentStatusAfterTaskChange()
         saveChanges()
     }
 
@@ -425,7 +425,7 @@ struct AssignmentDetailView: View {
         saveChanges()
     }
 
-    private func updateAssessmentStatusAfterTaskChange() {
+    private func updateAssignmentStatusAfterTaskChange() {
         guard !assignment.tasks.isEmpty else { return }
 
         let completedCount = assignment.tasks.filter(\.isCompleted).count
@@ -442,7 +442,7 @@ struct AssignmentDetailView: View {
         do {
             try modelContext.save()
         } catch {
-            assertionFailure("Failed to save assessment detail changes: \(error)")
+            assertionFailure("Failed to save assignment detail changes: \(error)")
         }
     }
 

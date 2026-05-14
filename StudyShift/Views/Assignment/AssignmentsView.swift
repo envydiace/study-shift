@@ -133,7 +133,7 @@ struct AssignmentsView: View {
             Text("No assignments yet")
                 .font(.headline)
 
-            Text("Add an assignment to start tracking your assessments.")
+            Text("Add an assignment to start tracking your assignments.")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
         }

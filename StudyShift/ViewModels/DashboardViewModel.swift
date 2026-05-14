@@ -63,7 +63,7 @@ final class DashboardViewModel: ObservableObject {
     func loadDashboardData() {
         loadUpcomingClasses()
         loadShiftSummary()
-        loadAssessmentsInProgress()
+        loadAssignmentsInProgress()
         loadUpcomingDeadlines()
     }
     
@@ -103,7 +103,7 @@ final class DashboardViewModel: ObservableObject {
         }
     }
     
-    func loadAssessmentsInProgress() {
+    func loadAssignmentsInProgress() {
         guard let assignmentRepository else {
             errorMessage = "Assignment repository is not configured."
             return
@@ -119,7 +119,7 @@ final class DashboardViewModel: ObservableObject {
             errorMessage = nil
         } catch {
             errorMessage = "Failed to load assignments."
-            print("Load assessments error:", error)
+            print("Load assignments error:", error)
         }
     }
     
@@ -131,7 +131,7 @@ final class DashboardViewModel: ObservableObject {
                 subjectCode: assignment.course?.code ?? "",
                 subjectName: assignment.course?.name ?? "No Course",
                 title: assignment.title,
-                progress: calculateAssessmentProgress(assignment)
+                progress: calculateAssignmentProgress(assignment)
             )
         }
     }
@@ -143,7 +143,7 @@ final class DashboardViewModel: ObservableObject {
             subjectCode: assignment.course?.code ?? "",
             subjectName: assignment.course?.name ?? "No Course",
             title: assignment.title,
-            progress: calculateAssessmentProgress(assignment)
+            progress: calculateAssignmentProgress(assignment)
         )
     }
 
@@ -198,11 +198,11 @@ final class DashboardViewModel: ObservableObject {
     private func mapToDeadlineItems(
         _ assignments: [Assignment]
     ) -> [DashboardDeadlineItem] {
-        assignments.map { assessment in
-            let days = daysUntil(assessment.dueDate)
+        assignments.map { assignment in
+            let days = daysUntil(assignment.dueDate)
 
             return DashboardDeadlineItem(
-                title: assessment.title,
+                title: assignment.title,
                 dueText: dueText(days: days),
                 statusText: deadlineStatusText(days: days),
                 statusColor: deadlineStatusColor(days: days),
@@ -234,7 +234,7 @@ final class DashboardViewModel: ObservableObject {
         }
     }
     
-    private func calculateAssessmentProgress(_ assignment: Assignment) -> Double {
+    private func calculateAssignmentProgress(_ assignment: Assignment) -> Double {
         let tasks = assignment.tasks
 
         guard !tasks.isEmpty else {

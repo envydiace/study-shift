@@ -498,37 +498,37 @@ struct CourseDetailView: View {
         return "0"
     }
 
-    private func weightText(for assessment: Assignment) -> String {
-        "\(displayNumber(assessment.weight)) %"
+    private func weightText(for assignment: Assignment) -> String {
+        "\(displayNumber(assignment.weight)) %"
     }
 
-    private func progressValue(for assessment: Assignment) -> Double {
-        guard !assessment.tasks.isEmpty else { return 0.2 }
-        let completed = assessment.tasks.filter(\.isCompleted).count
-        return Double(completed) / Double(assessment.tasks.count)
+    private func progressValue(for assignment: Assignment) -> Double {
+        guard !assignment.tasks.isEmpty else { return 0.2 }
+        let completed = assignment.tasks.filter(\.isCompleted).count
+        return Double(completed) / Double(assignment.tasks.count)
     }
 
-    private func progressMessage(for assessment: Assignment) -> String {
-        let percent = Int((1 - progressValue(for: assessment)) * 100)
+    private func progressMessage(for assignment: Assignment) -> String {
+        let percent = Int((1 - progressValue(for: assignment)) * 100)
         return "Need \(max(percent, 0))% more"
     }
 
-    private func dueText(for assessment: Assignment) -> String {
-        let days = Calendar.current.dateComponents([.day], from: .now, to: assessment.dueDate).day ?? 0
+    private func dueText(for assignment: Assignment) -> String {
+        let days = Calendar.current.dateComponents([.day], from: .now, to: assignment.dueDate).day ?? 0
         if days <= 0 { return "Due Today" }
         if days == 1 { return "Due Tomorrow" }
         return "Due in \(days) days"
     }
 
-    private func statusText(for assessment: Assignment) -> String {
-        let days = Calendar.current.dateComponents([.day], from: .now, to: assessment.dueDate).day ?? 0
+    private func statusText(for assignment: Assignment) -> String {
+        let days = Calendar.current.dateComponents([.day], from: .now, to: assignment.dueDate).day ?? 0
         if days <= 1 { return "Urgent" }
         if days <= 3 { return "Soon" }
         return "On Track"
     }
 
-    private func statusBackgroundColor(for assessment: Assignment) -> Color {
-        let status = statusText(for: assessment)
+    private func statusBackgroundColor(for assignment: Assignment) -> Color {
+        let status = statusText(for: assignment)
         switch status {
         case "Urgent":
             return .redMain
@@ -539,8 +539,8 @@ struct CourseDetailView: View {
         }
     }
 
-    private func statusForegroundColor(for assessment: Assignment) -> Color {
-        let status = statusText(for: assessment)
+    private func statusForegroundColor(for assignment: Assignment) -> Color {
+        let status = statusText(for: assignment)
         switch status {
         case "Urgent":
             return .red

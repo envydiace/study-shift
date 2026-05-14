@@ -3,6 +3,11 @@
 ## Overview
 This project is developed collaboratively, so please follow the Git workflow below before starting any implementation.
 
+### git repo:
+```bash
+https://github.com/envydiace/study-shift
+```
+
 ---
 
 ## Git Workflow
