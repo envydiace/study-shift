@@ -139,6 +139,7 @@ struct CourseDetailView: View {
                         } label: {
                             scoreRow(
                                 title: assignment.title,
+                                weight: String(assignment.weight),
                                 trailingText: scoreText(for: assignment),
                                 trailingColor: .tealMain
                             )
@@ -314,12 +315,17 @@ struct CourseDetailView: View {
         .clipShape(RoundedRectangle(cornerRadius: 22))
     }
 
-    private func scoreRow(title: String, trailingText: String, trailingColor: Color) -> some View {
+    private func scoreRow(title: String, weight: String, trailingText: String, trailingColor: Color) -> some View {
         HStack {
-            Text(title)
-                .font(.headline)
-                .foregroundStyle(.black)
-
+            VStack {
+                Text(title)
+                    .font(.headline)
+                    .foregroundStyle(.black)
+                
+                Text("\(weight)%")
+                    .font(.subheadline)
+                    .foregroundStyle(.black)
+            }
             Spacer()
 
             Text(trailingText)
@@ -336,15 +342,15 @@ struct CourseDetailView: View {
         .clipShape(RoundedRectangle(cornerRadius: 18))
     }
 
-    private func pendingRow(for assessment: Assignment) -> some View {
+    private func pendingRow(for assignment: Assignment) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text(assessment.title)
+                    Text(assignment.title)
                         .font(.headline)
                         .foregroundStyle(.black)
 
-                    Text(weightText(for: assessment))
+                    Text(weightText(for: assignment))
                         .font(.headline.bold())
                         .foregroundStyle(.black)
                         .padding(.horizontal, 14)
@@ -356,24 +362,24 @@ struct CourseDetailView: View {
                 Spacer()
 
                 VStack(alignment: .trailing, spacing: 8) {
-                    Text(statusText(for: assessment))
+                    Text(statusText(for: assignment))
                         .font(.caption.bold())
-                        .foregroundStyle(statusForegroundColor(for: assessment))
+                        .foregroundStyle(statusForegroundColor(for: assignment))
                         .padding(.horizontal, 14)
                         .padding(.vertical, 8)
-                        .background(statusBackgroundColor(for: assessment))
+                        .background(statusBackgroundColor(for: assignment))
                         .clipShape(Capsule())
 
-                    Text(dueText(for: assessment))
+                    Text(dueText(for: assignment))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
             }
 
-            ProgressView(value: progressValue(for: assessment))
+            ProgressView(value: progressValue(for: assignment))
                 .tint(.purpleMain)
 
-            Text(progressMessage(for: assessment))
+            Text(progressMessage(for: assignment))
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
@@ -492,37 +498,37 @@ struct CourseDetailView: View {
         return "0"
     }
 
-    private func weightText(for assessment: Assignment) -> String {
-        "\(displayNumber(assessment.weight)) Pts"
+    private func weightText(for assignment: Assignment) -> String {
+        "\(displayNumber(assignment.weight)) %"
     }
 
-    private func progressValue(for assessment: Assignment) -> Double {
-        guard !assessment.tasks.isEmpty else { return 0.2 }
-        let completed = assessment.tasks.filter(\.isCompleted).count
-        return Double(completed) / Double(assessment.tasks.count)
+    private func progressValue(for assignment: Assignment) -> Double {
+        guard !assignment.tasks.isEmpty else { return 0.2 }
+        let completed = assignment.tasks.filter(\.isCompleted).count
+        return Double(completed) / Double(assignment.tasks.count)
     }
 
-    private func progressMessage(for assessment: Assignment) -> String {
-        let percent = Int((1 - progressValue(for: assessment)) * 100)
+    private func progressMessage(for assignment: Assignment) -> String {
+        let percent = Int((1 - progressValue(for: assignment)) * 100)
         return "Need \(max(percent, 0))% more"
     }
 
-    private func dueText(for assessment: Assignment) -> String {
-        let days = Calendar.current.dateComponents([.day], from: .now, to: assessment.dueDate).day ?? 0
+    private func dueText(for assignment: Assignment) -> String {
+        let days = Calendar.current.dateComponents([.day], from: .now, to: assignment.dueDate).day ?? 0
         if days <= 0 { return "Due Today" }
         if days == 1 { return "Due Tomorrow" }
         return "Due in \(days) days"
     }
 
-    private func statusText(for assessment: Assignment) -> String {
-        let days = Calendar.current.dateComponents([.day], from: .now, to: assessment.dueDate).day ?? 0
+    private func statusText(for assignment: Assignment) -> String {
+        let days = Calendar.current.dateComponents([.day], from: .now, to: assignment.dueDate).day ?? 0
         if days <= 1 { return "Urgent" }
         if days <= 3 { return "Soon" }
         return "On Track"
     }
 
-    private func statusBackgroundColor(for assessment: Assignment) -> Color {
-        let status = statusText(for: assessment)
+    private func statusBackgroundColor(for assignment: Assignment) -> Color {
+        let status = statusText(for: assignment)
         switch status {
         case "Urgent":
             return .redMain
@@ -533,8 +539,8 @@ struct CourseDetailView: View {
         }
     }
 
-    private func statusForegroundColor(for assessment: Assignment) -> Color {
-        let status = statusText(for: assessment)
+    private func statusForegroundColor(for assignment: Assignment) -> Color {
+        let status = statusText(for: assignment)
         switch status {
         case "Urgent":
             return .red

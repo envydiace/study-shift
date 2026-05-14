@@ -6,6 +6,7 @@
 //
 import SwiftUI
 import SwiftData
+import UIKit
 
 struct TimetableImportView: View {
     @Environment(\.modelContext) private var context
@@ -74,17 +75,34 @@ private extension TimetableImportView {
             Text("Timetable URL")
                 .font(.headline)
                 .foregroundColor(.primary)
+            
+            HStack(spacing: 10) {
+                TextField("Paste iCal URL here", text: $viewModel.urlText)
+                    .font(.system(size: 16))
+                    .foregroundColor(.primary)
+                    .tint(.tealDark)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 14)
+                    .background(Color(red: 0.86, green: 1.0, blue: 0.95))
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .textInputAutocapitalization(.never)
+                    .keyboardType(.URL)
+                    .autocorrectionDisabled()
 
-            TextField("Paste iCal URL here", text: $viewModel.urlText)
-                .font(.system(size: 16))
-                .padding(.horizontal, 16)
-                .padding(.vertical, 14)
-                .background(Color(.systemGray6))
-                .clipShape(RoundedRectangle(cornerRadius: 16))
-                .textInputAutocapitalization(.never)
-                .keyboardType(.URL)
-                .autocorrectionDisabled()
-
+                Button {
+                    pasteClipboardText()
+                } label: {
+                    Image(systemName: "doc.on.clipboard")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundStyle(.tealDark)
+                        .frame(width: 52, height: 52)
+                        .background(Color(red: 0.86, green: 1.0, blue: 0.95))
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            }
+            
             Text("The selected color will be used as the default color for imported classes.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
@@ -198,9 +216,13 @@ private extension TimetableImportView {
         )
         .clipShape(RoundedRectangle(cornerRadius: 18))
     }
+    
+    private func pasteClipboardText() {
+        if let text = UIPasteboard.general.string {
+            viewModel.urlText = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+    }
 }
-
-// MARK: - Preview
 
 #Preview {
     TimetableImportView()

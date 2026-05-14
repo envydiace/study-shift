@@ -38,7 +38,7 @@ struct DashboardEmptyStateCard: View {
 #Preview {
     DashboardEmptyStateCard(
         icon: "doc.text",
-        title: "No assessments yet",
-        message: "Add assessments to track your progress here."
+        title: "No assignments yet",
+        message: "Add assignments to track your progress here."
     )
 }

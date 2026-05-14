@@ -1,5 +1,5 @@
 //
-//  AssessmentCard.swift
+//  AssignmentCard.swift
 //  StudyShift
 //
 //  Created by Đức Anh on 13/5/26.
@@ -39,5 +39,5 @@ struct AssignmentCard: View {
 }
 
 //#Preview {
-//    AssessmentCard()
+//    AssignmentCard()
 //}

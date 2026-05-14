@@ -216,32 +216,38 @@ struct AddEventView: View {
 
     private var classFields: some View {
         sectionCard {
-            VStack(alignment: .leading, spacing: 12) {
+            Menu {
+                Button {
+                    viewModel.selectedCourseID = nil
+                } label: {
+                    Text("No course")
+                }
+
+                ForEach(viewModel.courses) { course in
+                    Button {
+                        viewModel.selectedCourseID = course.id
+                    } label: {
+                        Text("\(course.code) - \(course.name)")
+                    }
+                }
+            } label: {
                 HStack {
                     Text("Course")
                         .font(.headline)
-                    
+                        .foregroundColor(.primary)
+
                     Spacer()
-                    
-                    Picker("Course", selection: $viewModel.courseCode) {
-                        Text("No course")
-                            .tag("")
 
-                        ForEach(viewModel.courses) { course in
-                            Divider()
-                            Text("\(course.code) - \(course.name)")
-                                .tag(course.code)
-                        }
-                    }
-                    .pickerStyle(.menu)
+                    Text(viewModel.selectedCourseText)
+                        .foregroundColor(.blue)
+                        .multilineTextAlignment(.trailing)
+                        .lineLimit(2)
+                        .frame(maxWidth: 230, alignment: .trailing)
+
+                    Image(systemName: "chevron.up.chevron.down")
+                        .font(.caption)
+                        .foregroundColor(.blue)
                 }
-                
-                Divider()
-
-                TextField("Location (optional)", text: $viewModel.location)
-                    .padding(.horizontal, 1)
-                    .padding(.vertical, 1)
-                    .autocorrectionDisabled(true)
             }
         }
     }

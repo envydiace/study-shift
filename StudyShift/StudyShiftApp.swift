@@ -10,6 +10,8 @@ import SwiftData
 
 @main
 struct StudyShiftApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+    
     private let sharedModelContainer = ModelContainerFactory.createAppContainer()
 
     var body: some Scene {

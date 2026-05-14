@@ -1,5 +1,5 @@
 //
-//  AssessmentDetailView.swift
+//  AssignmentDetailView.swift
 //  StudyShift
 //
 //  Created by Chelvin Alexyus on 14/5/2026.
@@ -13,6 +13,8 @@ struct AssignmentDetailView: View {
     @Environment(\.modelContext) private var modelContext
 
     let assignment: Assignment
+    
+    @State private var showEditSheet = false
     
     @State private var showScoreSheet = false
     @State private var scoreText = ""
@@ -33,30 +35,35 @@ struct AssignmentDetailView: View {
                 .padding(.bottom, 40)
             }
         }
-        .toolbar(.hidden, for: .navigationBar)
         .sheet(isPresented: $showScoreSheet) {
             scoreInputSheet
                 .presentationDetents([.height(320)])
+        }
+        .sheet(isPresented: $showEditSheet) {
+            AddAssignmentView(
+                assignmentToEdit: assignment,
+                preselectedCourseID: assignment.course?.id
+            )
         }
     }
 
     private var header: some View {
         HStack(alignment: .top) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Assessment Details")
+                Text("Assignment Details")
                     .font(.title2.bold())
 
-                Text("Semester 3 | 2026")
-                    .font(.subheadline)
+//                Text("Semester 3 | 2026")
+//                    .font(.subheadline)
             }
 
             Spacer()
 
-            Image(systemName: "bell")
-                .foregroundStyle(.black)
-                .padding(8)
-                .background(.white.opacity(0.85))
-                .clipShape(Circle())
+//            Image(systemName: "bell")
+//                .foregroundStyle(.black)
+//                .padding(8)
+//                .background(.white.opacity(0.85))
+//                .clipShape(Circle())
         }
         .foregroundStyle(.black)
     }
@@ -67,16 +74,6 @@ struct AssignmentDetailView: View {
             todoCard
             briefPreviewCard
             actionRow
-
-            Button {
-                dismiss()
-            } label: {
-                Text("Assessment List")
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(PillButtonStyle())
-            .padding(.top, 10)
-            .padding(.horizontal, 60)
         }
         .padding(22)
         .background(Color.surfaceCard)
@@ -238,11 +235,8 @@ struct AssignmentDetailView: View {
     private var actionRow: some View {
         VStack(spacing: 12) {
             HStack(spacing: 16) {
-                NavigationLink {
-                    AddAssignmentView(
-                        assignmentToEdit: assignment,
-                        preselectedCourseID: assignment.course?.id
-                    )
+                Button {
+                    showEditSheet = true
                 } label: {
                     Text("Edit")
                         .frame(maxWidth: .infinity)
@@ -408,7 +402,7 @@ struct AssignmentDetailView: View {
     private var briefPreviewText: String {
         let trimmed = assignment.note.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmed.isEmpty {
-            return "Add assignment notes or a brief to keep the reference material for this assessment in one place."
+            return "Add assignment notes or a brief to keep the reference material for this assignment in one place."
         }
         return trimmed
     }
@@ -419,7 +413,7 @@ struct AssignmentDetailView: View {
 
     private func toggle(_ task: TodoTask) {
         task.isCompleted.toggle()
-        updateAssessmentStatusAfterTaskChange()
+        updateAssignmentStatusAfterTaskChange()
         saveChanges()
     }
 
@@ -431,7 +425,7 @@ struct AssignmentDetailView: View {
         saveChanges()
     }
 
-    private func updateAssessmentStatusAfterTaskChange() {
+    private func updateAssignmentStatusAfterTaskChange() {
         guard !assignment.tasks.isEmpty else { return }
 
         let completedCount = assignment.tasks.filter(\.isCompleted).count
@@ -448,7 +442,7 @@ struct AssignmentDetailView: View {
         do {
             try modelContext.save()
         } catch {
-            assertionFailure("Failed to save assessment detail changes: \(error)")
+            assertionFailure("Failed to save assignment detail changes: \(error)")
         }
     }
 

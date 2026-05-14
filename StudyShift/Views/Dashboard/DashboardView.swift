@@ -9,32 +9,41 @@ import SwiftUI
 
 struct DashboardView: View {
     @Environment(\.modelContext) private var modelContext
-    @StateObject private var viewModel = DashboardViewModel()
+    @StateObject private var viewModel: DashboardViewModel
 
     @Binding var selectedTab: MainTab
 
     private let screenBackground = Color.tealMain
 
+    init(
+        selectedTab: Binding<MainTab>
+    ) {
+        _selectedTab = selectedTab
+        _viewModel = StateObject(wrappedValue: DashboardViewModel())
+    }
+    
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 18) {
-                headerSection
-                shiftSummaryCard
-                sectionHeader(title: "Assignments In Progress", count: viewModel.dashboardAssignments.count)
-                assessmentSection
-                sectionHeader(title: "Upcoming Classes", count: viewModel.upcomingClasses.count)
-                classesSection
-                sectionHeader(title: "Upcoming Deadlines", count: viewModel.upcomingDeadlines.count)
-                deadlinesSection
+        NavigationStack {
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 18) {
+                    headerSection
+                    shiftSummaryCard
+                    sectionHeader(title: "Assignments In Progress", count: viewModel.inProgressAssignments.count)
+                    assignmentSection
+                    sectionHeader(title: "Upcoming Classes", count: viewModel.upcomingClasses.count)
+                    classesSection
+                    sectionHeader(title: "Upcoming Deadlines", count: viewModel.upcomingDeadlines.count)
+                    deadlinesSection
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 14)
+                .padding(.bottom, 24)
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 14)
-            .padding(.bottom, 24)
-        }
-        .background(screenBackground.ignoresSafeArea())
-        .task {
-            viewModel.configure(context: modelContext)
-            viewModel.loadDashboardData()
+            .background(screenBackground.ignoresSafeArea())
+            .task {
+                viewModel.configure(context: modelContext)
+                viewModel.loadDashboardData()
+            }
         }
     }
 
@@ -128,11 +137,11 @@ struct DashboardView: View {
         }
     }
 
-    // MARK: - Assessments
+    // MARK: - Assignments
 
-    var assessmentSection: some View {
+    var assignmentSection: some View {
         VStack {
-            if viewModel.dashboardAssignments.isEmpty {
+            if viewModel.inProgressAssignments.isEmpty {
                 DashboardEmptyStateCard(
                    icon: "doc.text",
                    title: "No assignments yet",
@@ -141,8 +150,12 @@ struct DashboardView: View {
             } else {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 14) {
-                        ForEach(viewModel.dashboardAssignments) { item in
-                            AssignmentCard(item: item)
+                        ForEach(viewModel.inProgressAssignments) { item in
+                            NavigationLink {
+                                AssignmentDetailView(assignment: item)
+                            } label: {
+                                AssignmentCard(item: viewModel.mapToDashboardAssignmentItem(item))
+                            }
                         }
                     }
                     .padding(.trailing, 8)
@@ -184,7 +197,11 @@ struct DashboardView: View {
             } else {
                 VStack(spacing: 12) {
                     ForEach(viewModel.upcomingDeadlines) { item in
-                        DeadlineRowCard(item: item)
+                        NavigationLink {
+                            AssignmentDetailView(assignment: item)
+                        } label: {
+                            DeadlineRowCard(item: viewModel.mapToDeadlineItem(item))
+                        }
                     }
                 }
             }
