@@ -139,6 +139,7 @@ struct CourseDetailView: View {
                         } label: {
                             scoreRow(
                                 title: assignment.title,
+                                weight: String(assignment.weight),
                                 trailingText: scoreText(for: assignment),
                                 trailingColor: .tealMain
                             )
@@ -314,12 +315,17 @@ struct CourseDetailView: View {
         .clipShape(RoundedRectangle(cornerRadius: 22))
     }
 
-    private func scoreRow(title: String, trailingText: String, trailingColor: Color) -> some View {
+    private func scoreRow(title: String, weight: String, trailingText: String, trailingColor: Color) -> some View {
         HStack {
-            Text(title)
-                .font(.headline)
-                .foregroundStyle(.black)
-
+            VStack {
+                Text(title)
+                    .font(.headline)
+                    .foregroundStyle(.black)
+                
+                Text("\(weight)%")
+                    .font(.subheadline)
+                    .foregroundStyle(.black)
+            }
             Spacer()
 
             Text(trailingText)
@@ -336,15 +342,15 @@ struct CourseDetailView: View {
         .clipShape(RoundedRectangle(cornerRadius: 18))
     }
 
-    private func pendingRow(for assessment: Assignment) -> some View {
+    private func pendingRow(for assignment: Assignment) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text(assessment.title)
+                    Text(assignment.title)
                         .font(.headline)
                         .foregroundStyle(.black)
 
-                    Text(weightText(for: assessment))
+                    Text(weightText(for: assignment))
                         .font(.headline.bold())
                         .foregroundStyle(.black)
                         .padding(.horizontal, 14)
@@ -356,24 +362,24 @@ struct CourseDetailView: View {
                 Spacer()
 
                 VStack(alignment: .trailing, spacing: 8) {
-                    Text(statusText(for: assessment))
+                    Text(statusText(for: assignment))
                         .font(.caption.bold())
-                        .foregroundStyle(statusForegroundColor(for: assessment))
+                        .foregroundStyle(statusForegroundColor(for: assignment))
                         .padding(.horizontal, 14)
                         .padding(.vertical, 8)
-                        .background(statusBackgroundColor(for: assessment))
+                        .background(statusBackgroundColor(for: assignment))
                         .clipShape(Capsule())
 
-                    Text(dueText(for: assessment))
+                    Text(dueText(for: assignment))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
             }
 
-            ProgressView(value: progressValue(for: assessment))
+            ProgressView(value: progressValue(for: assignment))
                 .tint(.purpleMain)
 
-            Text(progressMessage(for: assessment))
+            Text(progressMessage(for: assignment))
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
@@ -493,7 +499,7 @@ struct CourseDetailView: View {
     }
 
     private func weightText(for assessment: Assignment) -> String {
-        "\(displayNumber(assessment.weight)) Pts"
+        "\(displayNumber(assessment.weight)) %"
     }
 
     private func progressValue(for assessment: Assignment) -> Double {
