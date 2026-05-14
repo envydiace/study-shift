@@ -219,6 +219,7 @@ struct AddAssignmentView: View {
             title = assignmentToEdit.title
             dueDate = assignmentToEdit.dueDate
             selectedCourseID = assignmentToEdit.course?.id ?? preselectedCourseID ?? courses.first?.id
+            selectedAssignmentType = assignmentToEdit.assignmentType
             selectedTargetGrade = assignmentToEdit.course?.targetGrade ?? .highDistinction
             weightText = Self.wholeNumberFormatter.string(from: NSNumber(value: assignmentToEdit.weight)) ?? "\(Int(assignmentToEdit.weight))"
             taskDrafts = assignmentToEdit.tasks
@@ -257,28 +258,31 @@ struct AddAssignmentView: View {
 Target Grade: \(selectedTargetGrade.rawValue)
 Assignment Type: \(selectedAssignmentType.rawValue)
 """
-        
-        let newAssignment = Assignment(
-            title: trimmedTitle,
-            assignmentType: selectedAssignmentType,
-            dueDate: dueDate,
-            weight: weight,
-            status: .notStarted,
-            note: note,
-            course: selectedCourse
-        )
 
-        if assignmentToEdit == nil {
-            modelContext.insert(newAssignment)
+        let assignment: Assignment
+        if let assignmentToEdit {
+            assignment = assignmentToEdit
+        } else {
+            assignment = Assignment(
+                title: trimmedTitle,
+                assignmentType: selectedAssignmentType,
+                dueDate: dueDate,
+                weight: weight,
+                status: .notStarted,
+                note: note,
+                course: selectedCourse
+            )
+            modelContext.insert(assignment)
         }
 
-        newAssignment.title = trimmedTitle
-        newAssignment.dueDate = dueDate
-        newAssignment.weight = weight
-        newAssignment.note = note
-        newAssignment.course = selectedCourse
+        assignment.title = trimmedTitle
+        assignment.assignmentType = selectedAssignmentType
+        assignment.dueDate = dueDate
+        assignment.weight = weight
+        assignment.note = note
+        assignment.course = selectedCourse
 
-        syncTasks(for: newAssignment, selectedCourse: selectedCourse)
+        syncTasks(for: assignment, selectedCourse: selectedCourse)
 
         do {
             try modelContext.save()
@@ -317,22 +321,6 @@ Assignment Type: \(selectedAssignmentType.rawValue)
             modelContext.insert(newTask)
             assignment.tasks.append(newTask)
         }
-    }
-
-    private func extractWordLimit(from note: String) -> String {
-        note
-            .split(separator: "\n")
-            .compactMap { line -> String? in
-                let parts = line.split(separator: ":", maxSplits: 1).map(String.init)
-                guard parts.count == 2,
-                      parts[0].trimmingCharacters(in: .whitespacesAndNewlines) == "Word Limit" else {
-                    return nil
-                }
-                return parts[1].trimmingCharacters(in: .whitespacesAndNewlines)
-            }
-            .first?
-            .replacingOccurrences(of: "-", with: "")
-            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
     }
 
     private struct TaskDraft: Identifiable {
