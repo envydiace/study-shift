@@ -35,7 +35,16 @@ final class AddEventViewModel: ObservableObject {
 
     // Class fields
     @Published var courses: [Course] = []
-    @Published var courseCode: String = ""
+    @Published var selectedCourseID: UUID? = nil
+    
+    var selectedCourseText: String {
+        guard let selectedCourseID,
+              let course = courses.first(where: { $0.id == selectedCourseID }) else {
+            return "No course"
+        }
+
+        return "\(course.code) - \(course.name)"
+    }
 
     // Work shift fields
     @Published var workplace: String = ""
@@ -216,14 +225,16 @@ final class AddEventViewModel: ObservableObject {
     private func saveClassSession() throws {
         guard let startDate, let endDate else { return }
 
-        let course = try courseRepository?.fetchByCode(courseCode)
+        let selectedCourse = courses.first {
+            $0.id == selectedCourseID
+        }
         let classSession = ClassSession(
             title: trimmedTitle,
             location: emptyToNil(location),
             startTime: startDate,
             endTime: endDate,
             colorHex: selectedColorHex,
-            course: course
+            course: selectedCourse
         )
 
         try classSessionReposiitory?.insert(classSession)
