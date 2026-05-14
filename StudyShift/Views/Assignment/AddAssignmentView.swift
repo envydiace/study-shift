@@ -13,6 +13,9 @@ struct AddAssignmentView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Course.name) private var courses: [Course]
 
+    private let assessmentToEdit: Assessment?
+    private let preselectedSubjectID: UUID?
+
     @State private var title = ""
     @State private var dueDate = Date()
     @State private var selectedCourseID: UUID?
@@ -20,10 +23,19 @@ struct AddAssignmentView: View {
     @State private var selectedTargetGrade: GradeTarget = .highDistinction
     @State private var weightText = ""
     @State private var taskText = ""
-    @State private var taskList: [String] = []
+    @State private var taskDrafts: [TaskDraft] = []
+    @State private var didLoadInitialState = false
 
     @State private var showAlert = false
     @State private var alertMessage = ""
+
+    init(
+        assessmentToEdit: Assessment? = nil,
+        preselectedSubjectID: UUID? = nil
+    ) {
+        self.assessmentToEdit = assessmentToEdit
+        self.preselectedSubjectID = preselectedSubjectID
+    }
 
     var body: some View {
         NavigationStack {
@@ -37,12 +49,12 @@ struct AddAssignmentView: View {
                         form
                         
                         Button {
-                            saveAssignment()
+                        saveAssignment()
                         } label: {
-                            Text("+ Add Assignment")
+                            Text(assessmentToEdit == nil ? "+ Add Assignment" : "Save Changes")
                                 .frame(maxWidth: .infinity)
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(PillButtonStyle())
                         .padding(.top, 8)
                     }
                     .padding(.horizontal, 24)
@@ -66,10 +78,10 @@ struct AddAssignmentView: View {
                 Text(alertMessage)
             }
             .onAppear {
-                if let firstCourse = courses.first {
-                    selectedCourseID = firstCourse.id
-                    selectedTargetGrade = firstCourse.targetGrade
-                }
+                loadInitialStateIfNeeded()
+            }
+            .onChange(of: subjects.count) { _, _ in
+                loadInitialStateIfNeeded()
             }
             .onChange(of: selectedCourseID) { _, newValue in
                 guard let newValue,
@@ -77,7 +89,6 @@ struct AddAssignmentView: View {
                 selectedTargetGrade = course.targetGrade
             }
         }
-       
     }
                 
     private var selectedCourse: Course? {
@@ -138,8 +149,8 @@ struct AddAssignmentView: View {
             inputSection(title: "Sub Tasks / To Do") {
                 VStack(spacing: 10) {
                     HStack {
-                        TextField("Add a task", text: $taskText)
-                        
+                        TextField("Task 1", text: $taskText)
+
                         Button {
                             addTask()
                         } label: {
@@ -148,15 +159,23 @@ struct AddAssignmentView: View {
                                 .foregroundStyle(.tealDark)
                         }
                     }
-                    
-                    if !taskList.isEmpty {
+
+                    if !taskDrafts.isEmpty {
                         VStack(alignment: .leading, spacing: 8) {
-                            ForEach(taskList, id: \.self) { task in
+                            ForEach(taskDrafts) { task in
                                 HStack {
-                                    Image(systemName: "checkmark.square")
-                                        .foregroundStyle(.tealDark)
-                                    Text(task)
+                                    Text(task.title)
                                         .font(.subheadline)
+
+                                    Spacer()
+
+                                    Button {
+                                        removeTask(task)
+                                    } label: {
+                                        Image(systemName: "minus.circle.fill")
+                                            .foregroundStyle(.redMain)
+                                    }
+                                    .buttonStyle(.plain)
                                 }
                             }
                         }
@@ -166,7 +185,7 @@ struct AddAssignmentView: View {
             }
         }
     }
-    
+
     private func inputSection<Content: View>(title: String, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(title)
@@ -184,10 +203,40 @@ struct AddAssignmentView: View {
     private func addTask() {
         let trimmed = taskText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
-        taskList.append(trimmed)
+        taskDrafts.append(TaskDraft(title: trimmed))
         taskText = ""
     }
-        
+
+    private func removeTask(_ task: TaskDraft) {
+        taskDrafts.removeAll { $0.id == task.id }
+    }
+
+    private func loadInitialStateIfNeeded() {
+        guard !didLoadInitialState else { return }
+
+        if let assessmentToEdit {
+            didLoadInitialState = true
+            title = assessmentToEdit.title
+            dueDate = assessmentToEdit.dueDate
+            selectedSubjectID = assessmentToEdit.subject?.id ?? preselectedSubjectID ?? subjects.first?.id
+            selectedTargetGrade = assessmentToEdit.subject?.targetGrade ?? .highDistinction
+            weightText = Self.wholeNumberFormatter.string(from: NSNumber(value: assessmentToEdit.weight)) ?? "\(Int(assessmentToEdit.weight))"
+            wordLimitText = extractWordLimit(from: assessmentToEdit.note)
+            taskDrafts = assessmentToEdit.tasks
+                .sorted { $0.createdAt < $1.createdAt }
+                .map { TaskDraft(id: $0.id, title: $0.title) }
+            return
+        }
+
+        guard let matchedSubject = subjects.first(where: { $0.id == preselectedSubjectID }) ?? subjects.first else {
+            return
+        }
+
+        didLoadInitialState = true
+        selectedSubjectID = matchedSubject.id
+        selectedTargetGrade = matchedSubject.targetGrade
+    }
+
     private func saveAssignment() {
         let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
         
@@ -219,30 +268,90 @@ Assignment Type: \(selectedAssignmentType.rawValue)
             note: note,
             course: selectedCourse
         )
-        
-        modelContext.insert(newAssignment)
-        
-        for item in taskList {
-            let task = TodoTask(
-                title: item,
-                dueDate: dueDate,
-                course: selectedCourse,
-                assignment: newAssignment
-            )
-            modelContext.insert(task)
-            newAssignment.tasks.append(task)
+
+        if assessmentToEdit == nil {
+            modelContext.insert(assignment)
         }
-        
+
+        assignment.title = trimmedTitle
+        assignment.dueDate = dueDate
+        assignment.weight = weight
+        assignment.note = note
+        assignment.subject = selectedSubject
+
+        syncTasks(for: assignment, selectedSubject: selectedSubject)
+
         do {
-            print("Starting Save")
             try modelContext.save()
-            print("Saving...")
             dismiss()
         } catch {
-            alertMessage = "Failed to save assignment."
+            alertMessage = "Failed to save assignment changes."
             showAlert = true
         }
     }
+
+    private func syncTasks(for assignment: Assessment, selectedSubject: Subject?) {
+        let existingTasksByID = Dictionary(uniqueKeysWithValues: assignment.tasks.map { ($0.id, $0) })
+        let retainedIDs = Set(taskDrafts.map(\.id))
+
+        for task in assignment.tasks where !retainedIDs.contains(task.id) {
+            modelContext.delete(task)
+        }
+
+        assignment.tasks.removeAll { !retainedIDs.contains($0.id) }
+
+        for draft in taskDrafts {
+            if let task = existingTasksByID[draft.id] {
+                task.title = draft.title
+                task.dueDate = dueDate
+                task.subject = selectedSubject
+                continue
+            }
+
+            let newTask = TodoTask(
+                id: draft.id,
+                title: draft.title,
+                dueDate: dueDate,
+                subject: selectedSubject,
+                assessment: assignment
+            )
+            modelContext.insert(newTask)
+            assignment.tasks.append(newTask)
+        }
+    }
+
+    private func extractWordLimit(from note: String) -> String {
+        note
+            .split(separator: "\n")
+            .compactMap { line -> String? in
+                let parts = line.split(separator: ":", maxSplits: 1).map(String.init)
+                guard parts.count == 2,
+                      parts[0].trimmingCharacters(in: .whitespacesAndNewlines) == "Word Limit" else {
+                    return nil
+                }
+                return parts[1].trimmingCharacters(in: .whitespacesAndNewlines)
+            }
+            .first?
+            .replacingOccurrences(of: "-", with: "")
+            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+    }
+
+    private struct TaskDraft: Identifiable {
+        let id: UUID
+        var title: String
+
+        init(id: UUID = UUID(), title: String) {
+            self.id = id
+            self.title = title
+        }
+    }
+
+    private static let wholeNumberFormatter: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.maximumFractionDigits = 0
+        formatter.minimumFractionDigits = 0
+        return formatter
+    }()
 }
 
 
