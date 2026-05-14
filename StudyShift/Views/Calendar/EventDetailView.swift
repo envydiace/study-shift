@@ -110,39 +110,39 @@ struct EventDetailView: View {
     }
     
     private var deleteConfirmPopup: some View {
-            VStack(spacing: 16) {
-                Text("Are you sure you want to delete this event?")
-                    .font(.subheadline)
-                    .multilineTextAlignment(.center)
+        VStack(spacing: 16) {
+            Text("Are you sure you want to delete this event?")
+                .font(.subheadline)
+                .multilineTextAlignment(.center)
 
-                Divider()
+            Divider()
 
-                Button(role: .destructive) {
-                    onDelete()
-                    dismiss()
-                } label: {
-                    Text("Delete Event")
-                        .fontWeight(.semibold)
-                        .frame(maxWidth: .infinity)
-                }
-
-                Divider()
-
-                Button {
-                    withAnimation {
-                        showDeleteConfirm = false
-                    }
-                } label: {
-                    Text("Cancel")
-                        .fontWeight(.semibold)
-                        .frame(maxWidth: .infinity)
-                }
+            Button(role: .destructive) {
+                onDelete()
+                dismiss()
+            } label: {
+                Text("Delete Event")
+                    .fontWeight(.semibold)
+                    .frame(maxWidth: .infinity)
             }
-            .padding(.vertical, 16)
-            .background(Color(.secondarySystemBackground))
-            .clipShape(RoundedRectangle(cornerRadius: 18))
-            .shadow(radius: 12)
+
+            Divider()
+
+            Button {
+                withAnimation {
+                    showDeleteConfirm = false
+                }
+            } label: {
+                Text("Cancel")
+                    .fontWeight(.semibold)
+                    .frame(maxWidth: .infinity)
+            }
         }
+        .padding(.vertical, 16)
+        .background(Color(.secondarySystemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 18))
+        .shadow(radius: 12)
+    }
 
     private func detailRow(
         icon: String,

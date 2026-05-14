@@ -11,13 +11,20 @@ struct AddCourseView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
 
+    let courseToEdit: Course?
     let onSaved: (() -> Void)?
 
     @StateObject private var viewModel: AddCourseViewModel
 
-    init(onSaved: (() -> Void)? = nil) {
+    init(
+        courseToEdit: Course? = nil,
+        onSaved: (() -> Void)? = nil
+    ) {
+        self.courseToEdit = courseToEdit
         self.onSaved = onSaved
-        _viewModel = StateObject(wrappedValue: AddCourseViewModel())
+        _viewModel = StateObject(
+            wrappedValue: AddCourseViewModel(courseToEdit: courseToEdit)
+        )
     }
 
     var body: some View {
@@ -37,7 +44,7 @@ struct AddCourseView: View {
                     .padding(.bottom, 40)
                 }
             }
-            .navigationTitle("Add Course")
+            .navigationTitle(courseToEdit == nil ? "Add Course" : "Edit Course")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -55,11 +62,11 @@ struct AddCourseView: View {
     
     var headerSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Create Course")
+            Text(courseToEdit == nil ? "Create Course" : "Edit Course")
                 .font(.system(size: 28, weight: .bold))
                 .foregroundStyle(.black)
 
-            Text("Add course details, target grade, and a display color for your assignments.")
+            Text(courseToEdit == nil ? "Add course details, target grade, and a display color for your assignments." : "Edit course details")
                 .font(.system(size: 15, weight: .medium))
                 .foregroundStyle(.black.opacity(0.6))
         }

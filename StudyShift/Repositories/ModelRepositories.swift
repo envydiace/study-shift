@@ -28,6 +28,24 @@ struct CourseRepository: RepositoryProtocol {
         )
         return try fetch(with: descriptor).first
     }
+    
+    func deleteCourseWithRelatedData(_ course: Course) throws {
+        let assignments = Array(course.assignments)
+
+        for assignment in assignments {
+            let tasks = Array(assignment.tasks)
+
+            for task in tasks {
+                context.delete(task)
+            }
+
+            context.delete(assignment)
+        }
+
+        context.delete(course)
+
+        try save()
+    }
 }
 
 struct AssignmentRepository: RepositoryProtocol {
