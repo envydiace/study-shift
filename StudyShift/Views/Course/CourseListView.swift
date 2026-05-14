@@ -9,6 +9,8 @@ import SwiftData
 
 struct CourseListView: View {
     @Query(sort: \Course.name) private var courses: [Course]
+    
+    @State private var showAddCourseSheet = false
 
     var body: some View {
         ZStack {
@@ -58,6 +60,9 @@ struct CourseListView: View {
             }
         }
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $showAddCourseSheet) {
+            AddCourseView()
+        }
     }
 
     private var header: some View {
@@ -65,17 +70,29 @@ struct CourseListView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Course List")
                     .font(.title3.bold())
+                
+                
 
-                Text("Semester 3 | 2026")
-                    .font(.caption)
+//                Text("Semester 3 | 2026")
+//                    .font(.caption)
             }
 
             Spacer()
 
-            Image(systemName: "bell")
-                .padding(8)
-                .background(.white)
-                .clipShape(Circle())
+            Button {
+                showAddCourseSheet = true
+            } label: {
+                Image(systemName: "plus")
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundStyle(.black)
+                    .padding(10)
+                    .background(Color.surfaceCard)
+                    .clipShape(Circle())
+            }
+//            Image(systemName: "bell")
+//                .padding(8)
+//                .background(.white)
+//                .clipShape(Circle())
         }
         .foregroundStyle(.black)
     }

@@ -8,9 +8,51 @@
 import SwiftUI
 
 struct CourseDetailView: View {
+    @Environment(\.modelContext) private var modelContext
+    @Environment(\.dismiss) private var dismiss
+    
     let course: Course
-
+    
+    @State var isShowAddAssignment = false
+    @State var showEditCourseSheet = false
+    
+    @State var showDeleteConfirm = false
+    @State private var showDeleteError = false
+    @State private var deleteErrorMessage = ""
+    
+    @State private var courseRepository: CourseRepository?
+    
     var body: some View {
+        ZStack {
+            mainContent
+                .blur(radius: showDeleteConfirm ? 3 : 0)
+            
+            if showDeleteConfirm {
+                Color.black.opacity(0.25)
+                    .ignoresSafeArea()
+                    .onTapGesture {
+                        withAnimation {
+                            showDeleteConfirm = false
+                        }
+                    }
+                
+                VStack {
+                    Spacer()
+                    
+                    deleteConfirmPopup
+                        .padding(.horizontal)
+                        .padding(.bottom, 90)
+                }
+                .transition(.opacity)
+            }
+        }
+        .animation(.easeInOut(duration: 0.2), value: showDeleteConfirm)
+        .task {
+            courseRepository = CourseRepository(context: modelContext)
+        }
+    }
+    
+    private var mainContent: some View {
         ZStack {
             Color.tealMain
                 .ignoresSafeArea()
@@ -18,6 +60,7 @@ struct CourseDetailView: View {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 22) {
                     header
+                    
                     contentCard
                 }
                 .padding(.horizontal, 24)
@@ -25,7 +68,6 @@ struct CourseDetailView: View {
                 .padding(.bottom, 40)
             }
         }
-        .toolbar(.hidden, for: .navigationBar)
     }
 
     private var header: some View {
@@ -34,17 +76,41 @@ struct CourseDetailView: View {
                 Text("Course Detail")
                     .font(.title2.bold())
 
-                Text("Semester 3 | 2026")
-                    .font(.subheadline)
+//                Text("Semester 3 | 2026")
+//                    .font(.subheadline)
             }
 
             Spacer()
+            
+            HStack(spacing: 10) {
+                Button {
+                    showEditCourseSheet = true
+                } label: {
+                    Image(systemName: "pencil")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(.tealDark)
+                        .frame(width: 36, height: 36)
+                        .background(Color.white.opacity(0.9))
+                        .clipShape(Circle())
+                }
 
-            Image(systemName: "bell")
-                .foregroundStyle(.black)
-                .padding(8)
-                .background(.white.opacity(0.85))
-                .clipShape(Circle())
+                Button {
+                    showDeleteConfirm = true
+                } label: {
+                    Image(systemName: "trash")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(.red)
+                        .frame(width: 36, height: 36)
+                        .background(Color.white.opacity(0.9))
+                        .clipShape(Circle())
+                }
+            }
+
+//            Image(systemName: "bell")
+//                .foregroundStyle(.black)
+//                .padding(8)
+//                .background(.white.opacity(0.85))
+//                .clipShape(Circle())
         }
         .foregroundStyle(.black)
     }
@@ -52,7 +118,7 @@ struct CourseDetailView: View {
     private var contentCard: some View {
         VStack(alignment: .leading, spacing: 24) {
             Text("\(course.code) \(course.name)")
-                .font(.title.bold())
+                .font(.title2.bold())
                 .foregroundStyle(.black)
 
             overallGradeCard2
@@ -82,10 +148,10 @@ struct CourseDetailView: View {
                 }
             }
 
-            NavigationLink {
-                AddAssignmentView(preselectedCourseID: course.id)
+            Button {
+                isShowAddAssignment = true
             } label: {
-                Text("+ Add")
+                Text("+ Add Assignment")
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(PillButtonStyle())
@@ -113,6 +179,12 @@ struct CourseDetailView: View {
         .padding(22)
         .background(Color.surfaceCard)
         .clipShape(RoundedRectangle(cornerRadius: 24))
+        .sheet(isPresented: $isShowAddAssignment) {
+            AddAssignmentView(preselectedCourseID: course.id)
+        }
+        .sheet(isPresented: $showEditCourseSheet) {
+            AddCourseView(courseToEdit: course)
+        }
     }
     
     private var overallGradeCard2: some View {
@@ -318,6 +390,64 @@ struct CourseDetailView: View {
             .padding(16)
             .background(.white.opacity(0.8))
             .clipShape(RoundedRectangle(cornerRadius: 18))
+    }
+    
+    private var deleteConfirmPopup: some View {
+        VStack(spacing: 16) {
+            Text("Delete Course?")
+                .font(.title3.bold())
+                .multilineTextAlignment(.center)
+
+            Text("Deleting this course will also delete all related assignments and tasks.")
+                .font(.body)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 12)
+
+            Divider()
+
+            Button(role: .destructive) {
+                deleteCourse()
+                dismiss()
+            } label: {
+                Text("Delete Course")
+                    .fontWeight(.semibold)
+                    .frame(maxWidth: .infinity)
+            }
+
+            Divider()
+
+            Button {
+                withAnimation {
+                    showDeleteConfirm = false
+                }
+            } label: {
+                Text("Cancel")
+                    .fontWeight(.semibold)
+                    .frame(maxWidth: .infinity)
+            }
+        }
+        .padding(.vertical, 16)
+        .background(Color(.secondarySystemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 18))
+        .shadow(radius: 12)
+    }
+    
+    private func deleteCourse() {
+        guard let courseRepository else {
+            deleteErrorMessage = "Course repository is not configured."
+            showDeleteError = true
+            return
+        }
+
+        do {
+            try courseRepository.deleteCourseWithRelatedData(course)
+            dismiss()
+        } catch {
+            deleteErrorMessage = "Could not delete course. Please try again."
+            showDeleteError = true
+            print("Delete course error:", error)
+        }
     }
 
     private var gradedAssignments: [Assignment] {

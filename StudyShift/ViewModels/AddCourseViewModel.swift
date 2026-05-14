@@ -17,19 +17,23 @@ final class AddCourseViewModel: ObservableObject {
 
     @Published var showValidationError: Bool = false
     @Published var validationMessage: String = ""
-
-    let colorOptions: [String] = [
-        "#4F46E5",
-        "#2563EB",
-        "#16A34A",
-        "#DC2626",
-        "#EA580C",
-        "#9333EA",
-        "#0891B2",
-        "#CA8A04"
-    ]
+    
+    @Published var isShowingColorDropdown: Bool = false
 
     private var repository: CourseRepository?
+    
+    private let courseToEdit: Course?
+    
+    init(courseToEdit: Course? = nil) {
+        self.courseToEdit = courseToEdit
+
+        if let courseToEdit {
+            self.name = courseToEdit.name
+            self.code = courseToEdit.code
+            self.targetGrade = courseToEdit.targetGrade
+            self.colorHex = courseToEdit.colorHex
+        }
+    }
 
     func configure(context: ModelContext) {
         if repository == nil {
@@ -59,21 +63,33 @@ final class AddCourseViewModel: ObservableObject {
             return false
         }
 
-        let course = Course(
-            name: trimmedName,
-            code: trimmedCode,
-            colorHex: colorHex,
-            targetGrade: targetGrade
-        )
-
         do {
-            try repository.insert(course)
-            print("Course saved successfully!")
+            if let courseToEdit {
+                courseToEdit.name = trimmedName
+                courseToEdit.code = trimmedCode.uppercased()
+                courseToEdit.targetGrade = targetGrade
+                courseToEdit.colorHex = colorHex
+
+                try repository.save()
+            } else {
+                let course = Course(
+                    name: trimmedName,
+                    code: trimmedCode.uppercased(),
+                    colorHex: colorHex,
+                    targetGrade: targetGrade
+                )
+
+                try repository.insert(course)
+            }
+
+            showValidationError = false
+            validationMessage = ""
             return true
+
         } catch {
-            showValidationError = true
             validationMessage = "Failed to save course."
-            print("Failed to save course: \(error)")
+            showValidationError = true
+            print("Save course error:", error)
             return false
         }
     }
