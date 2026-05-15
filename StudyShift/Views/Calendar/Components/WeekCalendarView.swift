@@ -35,6 +35,7 @@ struct WeekCalendarView: View {
                     }
                 }
                 .frame(width: width, height: hourHeight * 24)
+                .padding(.bottom, 24)
             }
         }
     }

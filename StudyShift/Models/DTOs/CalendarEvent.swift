@@ -16,4 +16,9 @@ struct CalendarEvent: Identifiable {
     let end: Date
     let color: Color
     let type: EventType
+
+    let location: String?
+    let notes: String?
+    let courseCode: String?
+    let courseName: String?
 }

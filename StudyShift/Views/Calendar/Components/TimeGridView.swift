@@ -29,6 +29,7 @@ struct TimeGridView: View {
                         .frame(height: 1)
                 }
                 .frame(height: hourHeight)
+//                .background(.white)
             }
         }
     }

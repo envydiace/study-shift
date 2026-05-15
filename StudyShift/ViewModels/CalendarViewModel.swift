@@ -216,7 +216,11 @@ final class CalendarViewModel: ObservableObject {
                 start: $0.startTime,
                 end: $0.endTime,
                 color: Color(hex: $0.colorHex),
-                type: .classSession
+                type: .classSession,
+                location: $0.location,
+                notes: nil,
+                courseCode: $0.course?.code,
+                courseName: $0.course?.name
             )
         }
 
@@ -227,25 +231,29 @@ final class CalendarViewModel: ObservableObject {
                 start: $0.startTime,
                 end: $0.endTime,
                 color: Color(hex: $0.colorHex),
-                type: .workShift
+                type: .workShift,
+                location: $0.workplace,
+                notes: $0.note,
+                courseCode: nil,
+                courseName: nil
             )
         }
 
-        updatedEvents += tasks.compactMap { task in
-            guard let start = task.scheduledStart,
-                  let end = task.scheduledEnd else {
-                return nil
-            }
-
-            return CalendarEvent(
-                sourceId: task.id,
-                title: task.title,
-                start: start,
-                end: end,
-                color: .green,
-                type: .task
-            )
-        }
+//        updatedEvents += tasks.compactMap { task in
+//            guard let start = task.scheduledStart,
+//                  let end = task.scheduledEnd else {
+//                return nil
+//            }
+//
+//            return CalendarEvent(
+//                sourceId: task.id,
+//                title: task.title,
+//                start: start,
+//                end: end,
+//                color: .green,
+//                type: .task
+//            )
+//        }
         
         updatedEvents += personalEvents.compactMap { personalEvent in
             guard let start = personalEvent.startDate,
@@ -258,7 +266,11 @@ final class CalendarViewModel: ObservableObject {
                 start: start,
                 end: end,
                 color: Color(hex: personalEvent.colorHex),
-                type: .personal
+                type: .personal,
+                location: personalEvent.location,
+                notes: personalEvent.notes,
+                courseCode: nil,
+                courseName: nil
             )
         }
 

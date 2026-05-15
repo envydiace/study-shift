@@ -40,137 +40,209 @@ struct EventDetailView: View {
         }
         .animation(.easeInOut(duration: 0.2), value: showDeleteConfirm)
     }
-    
+
     private var mainContent: some View {
-        NavigationStack {
-            VStack(alignment: .leading, spacing: 20) {
-                HStack(spacing: 12) {
-                    Circle()
-                        .fill(event.color)
-                        .frame(width: 14, height: 14)
+        ZStack {
+            Color.tealMain
+                .ignoresSafeArea()
 
-                    Text(event.title)
-                        .font(.title2)
-                        .fontWeight(.semibold)
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 22) {
+                    header
+                    contentCard
                 }
-
-                VStack(alignment: .leading, spacing: 12) {
-                    detailRow(
-                        icon: "calendar",
-                        title: "Date",
-                        value: event.start.formatted(date: .abbreviated, time: .omitted)
-                    )
-
-                    detailRow(
-                        icon: "clock",
-                        title: "Start",
-                        value: event.start.formatted(date: .omitted, time: .shortened)
-                    )
-
-                    detailRow(
-                        icon: "clock.fill",
-                        title: "End",
-                        value: event.end.formatted(date: .omitted, time: .shortened)
-                    )
-
-                    detailRow(
-                        icon: "hourglass",
-                        title: "Duration",
-                        value: durationText
-                    )
-                }
-
-                Spacer()
-
-                Button(role: .destructive) {
-                    withAnimation {
-                        showDeleteConfirm = true
-                    }
-                } label: {
-                    Text("Delete Event")
-                        .fontWeight(.semibold)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.red.opacity(0.12))
-                        .foregroundColor(.red)
-                        .clipShape(RoundedRectangle(cornerRadius: 14))
-                }
-            }
-            .padding()
-            .navigationTitle("Event Detail")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Done") {
-                        dismiss()
-                    }
-                }
+                .padding(.horizontal, 24)
+                .padding(.top, 30)
+                .padding(.bottom, 40)
             }
         }
+        .toolbar(.hidden, for: .navigationBar)
     }
-    
-    private var deleteConfirmPopup: some View {
-        VStack(spacing: 16) {
-            Text("Are you sure you want to delete this event?")
-                .font(.subheadline)
-                .multilineTextAlignment(.center)
+}
 
-            Divider()
+private extension EventDetailView {
+    var header: some View {
+        HStack(alignment: .top) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Event Detail")
+                    .font(.title2.bold())
+                    .foregroundStyle(.black)
 
-            Button(role: .destructive) {
-                onDelete()
-                dismiss()
-            } label: {
-                Text("Delete Event")
-                    .fontWeight(.semibold)
-                    .frame(maxWidth: .infinity)
+                Text(event.type.rawValue)
+                    .font(.subheadline)
+                    .foregroundStyle(.black.opacity(0.65))
             }
 
-            Divider()
+            Spacer()
 
             Button {
-                withAnimation {
-                    showDeleteConfirm = false
-                }
+                dismiss()
             } label: {
-                Text("Cancel")
-                    .fontWeight(.semibold)
-                    .frame(maxWidth: .infinity)
+                Image(systemName: "xmark")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(.black)
+                    .frame(width: 36, height: 36)
+                    .background(Color.white.opacity(0.9))
+                    .clipShape(Circle())
             }
         }
-        .padding(.vertical, 16)
-        .background(Color(.secondarySystemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 18))
-        .shadow(radius: 12)
     }
 
-    private func detailRow(
-        icon: String,
-        title: String,
-        value: String
-    ) -> some View {
-        HStack(alignment: .top, spacing: 12) {
-            Image(systemName: icon)
-                .foregroundColor(.blue)
-                .frame(width: 24)
+    var contentCard: some View {
+        VStack(alignment: .leading, spacing: 22) {
+            eventTitleSection
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+            VStack(spacing: 12) {
+                detailRow(
+                    icon: "tag.fill",
+                    title: "Event Type",
+                    value: event.type.rawValue
+                )
 
-                Text(value)
-                    .font(.body)
+                detailRow(
+                    icon: "calendar",
+                    title: "Date",
+                    value: dateText
+                )
+
+                detailRow(
+                    icon: "clock",
+                    title: "Time",
+                    value: timeRangeText
+                )
+
+                detailRow(
+                    icon: "hourglass",
+                    title: "Duration",
+                    value: durationText
+                )
+
+                if let location = event.location,
+                   !location.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    detailRow(
+                        icon: "mappin.and.ellipse",
+                        title: "Location",
+                        value: location
+                    )
+                }
+
+                if event.type == .classSession,
+                   let courseText = courseText {
+                    detailRow(
+                        icon: "book.closed.fill",
+                        title: "Course",
+                        value: courseText
+                    )
+                }
+
+                if event.type == .personal,
+                   let notes = event.notes,
+                   !notes.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    detailRow(
+                        icon: "note.text",
+                        title: "Notes",
+                        value: notes
+                    )
+                }
+            }
+
+            Button(role: .destructive) {
+                withAnimation {
+                    showDeleteConfirm = true
+                }
+            } label: {
+                HStack {
+                    Image(systemName: "trash")
+                    Text("Delete Event")
+                }
+                .font(.headline.bold())
+                .foregroundStyle(.red)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+                .background(Color.red.opacity(0.12))
+                .clipShape(Capsule())
+            }
+            .padding(.top, 8)
+        }
+        .padding(22)
+        .background(Color.surfaceCard)
+        .clipShape(RoundedRectangle(cornerRadius: 24))
+    }
+
+    var eventTitleSection: some View {
+        HStack(alignment: .top, spacing: 14) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(event.color.opacity(0.18))
+                    .frame(width: 52, height: 52)
+
+                Image(systemName: eventIcon)
+                    .font(.system(size: 22, weight: .semibold))
+                    .foregroundStyle(event.color)
+            }
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text(event.title)
+                    .font(.title3.bold())
+                    .foregroundStyle(.black)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                Text(timeRangeText)
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(.black.opacity(0.6))
             }
 
             Spacer()
         }
-        .padding()
-        .background(Color(.secondarySystemGroupedBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 14))
     }
 
-    private var durationText: String {
+    func detailRow(
+        icon: String,
+        title: String,
+        value: String
+    ) -> some View {
+        HStack(alignment: .center, spacing: 14) {
+            Image(systemName: icon)
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundStyle(.tealDark)
+                .frame(width: 36, height: 36)
+                .background(Color.tealMain.opacity(0.35))
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title)
+                    .font(.caption.bold())
+                    .foregroundStyle(.secondary)
+
+                Text(value)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.black)
+            }
+
+            Spacer()
+        }
+        .padding(14)
+        .background(Color.white.opacity(0.92))
+        .clipShape(RoundedRectangle(cornerRadius: 18))
+    }
+}
+
+private extension EventDetailView {
+    var dateText: String {
+        event.start.formatted(date: .abbreviated, time: .omitted)
+    }
+
+    var timeRangeText: String {
+        "\(formatHourMinute(event.start)) - \(formatHourMinute(event.end))"
+    }
+
+    func formatHourMinute(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        return formatter.string(from: date)
+    }
+
+    var durationText: String {
         let duration = event.end.timeIntervalSince(event.start)
         let hours = Int(duration / 3600)
         let minutes = Int((duration.truncatingRemainder(dividingBy: 3600)) / 60)
@@ -184,6 +256,82 @@ struct EventDetailView: View {
         }
 
         return "\(hours)h \(minutes)m"
+    }
+
+    var eventIcon: String {
+        switch event.type {
+        case .personal:
+            return "person.fill"
+        case .classSession:
+            return "book.fill"
+        case .workShift:
+            return "briefcase.fill"
+        case .task:
+            return "checklist"
+        }
+    }
+    
+    var courseText: String? {
+        let code = event.courseCode?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let name = event.courseName?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+
+        if code.isEmpty && name.isEmpty {
+            return nil
+        }
+
+        if code.isEmpty {
+            return name
+        }
+
+        if name.isEmpty {
+            return code
+        }
+
+        return "\(code) - \(name)"
+    }
+}
+
+private extension EventDetailView {
+    var deleteConfirmPopup: some View {
+        VStack(spacing: 16) {
+            Text("Delete Event?")
+                .font(.title3.bold())
+                .multilineTextAlignment(.center)
+
+            Text("Are you sure you want to delete this event?")
+                .font(.body)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 12)
+
+            Divider()
+
+            Button(role: .destructive) {
+                onDelete()
+                dismiss()
+            } label: {
+                Text("Delete Event")
+                    .font(.title3.weight(.semibold))
+                    .frame(maxWidth: .infinity)
+            }
+
+            Divider()
+
+            Button {
+                withAnimation {
+                    showDeleteConfirm = false
+                }
+            } label: {
+                Text("Cancel")
+                    .font(.title3.weight(.semibold))
+                    .frame(maxWidth: .infinity)
+            }
+        }
+        .padding(.vertical, 20)
+        .padding(.horizontal, 12)
+        .background(Color(.secondarySystemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 18))
+        .shadow(radius: 12)
     }
 }
 
@@ -199,7 +347,11 @@ struct EventDetailView: View {
                 to: Date()
             ) ?? Date(),
             color: .blue,
-            type: .classSession
+            type: .classSession,
+            location: "CB11.02.101",
+            notes: nil,
+            courseCode: "41889",
+            courseName: "iOS Application Development"
         ),
         onDelete: {
             print("Preview delete tapped")

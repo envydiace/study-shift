@@ -66,6 +66,7 @@ struct CalendarTopBar: View {
         }
         .padding(.horizontal)
         .padding(.vertical, 12)
+        .background(Color.tealMain)
     }
 }
 
