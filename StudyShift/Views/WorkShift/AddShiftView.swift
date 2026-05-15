@@ -12,6 +12,7 @@ struct AddShiftView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
 
+    @ObservedObject var viewModel: WorkShiftViewModel
     let onSaved: (() -> Void)?
 
     @State private var employer: String = ""
@@ -31,6 +32,7 @@ struct AddShiftView: View {
 
                     fieldSection("Employer") {
                         TextField("ABC Store", text: $employer)
+                            .autocorrectionDisabled()
                     }
 
                     fieldSection("Start Time") {
@@ -156,6 +158,13 @@ struct AddShiftView: View {
             return
         }
 
+        // Check for clashes with existing shifts or classes
+        if let clashMessage = viewModel.hasClash(startTime: startTime, endTime: endTime) {
+            errorMessage = clashMessage
+            showError = true
+            return
+        }
+
         let shift = WorkShift(
             title: trimmedEmployer,
             workplace: trimmedEmployer,
@@ -177,6 +186,6 @@ struct AddShiftView: View {
 }
 
 #Preview {
-    AddShiftView(onSaved: nil)
+    AddShiftView(viewModel: WorkShiftViewModel(), onSaved: nil)
         .modelContainer(ModelContainerFactory.createPreviewContainer())
 }
