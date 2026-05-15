@@ -149,8 +149,7 @@ final class WorkShiftViewModel: ObservableObject {
         let weekday = calendar.component(.weekday, from: startOfToday)
         let daysFromMonday = (weekday + 5) % 7
         let thisMonday = calendar.date(byAdding: .day, value: -daysFromMonday, to: startOfToday)!
-        let weeksSinceRef = calendar.component(.weekOfYear, from: thisMonday)
-        let fortnightStart = weeksSinceRef % 2 == 0 ? thisMonday : calendar.date(byAdding: .day, value: -7, to: thisMonday)!
+        let fortnightStart = calendar.date(byAdding: .day, value: -7, to: thisMonday)!
         let fortnightEnd = calendar.date(byAdding: .day, value: 13, to: fortnightStart)!
         let endOfFortnight = calendar.date(bySettingHour: 23, minute: 59, second: 59, of: fortnightEnd)!
         return (start: fortnightStart, end: endOfFortnight)
